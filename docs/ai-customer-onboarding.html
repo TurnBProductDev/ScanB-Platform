@@ -1,0 +1,219 @@
+<title>ScanB AI Customer Onboarding</title>
+<style>
+:root{
+  --paper:#EEF1F0; --paper-2:#E4E9E8; --surface:#FFFFFF; --surface-2:#F7F9F8;
+  --ink:#101B1A; --ink-2:#435250; --ink-3:#6F817E; --rule:#D6DDDB; --rule-2:#C2CCCA;
+  --accent:#0E7C74; --accent-2:#0A5F59; --accent-wash:#DCEBE9;
+  --flag:#A93226; --flag-wash:#F5E2E0; --amber:#8A5A11; --amber-wash:#F2E9D8;
+  --f-display:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --f-body:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --f-mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
+  --measure:68ch; --wide:980px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0A1112; --paper-2:#0F1819; --surface:#101A1B; --surface-2:#162223;
+    --ink:#E6EEED; --ink-2:#A7B8B5; --ink-3:#7B8D8A; --rule:#22322F; --rule-2:#2E4240;
+    --accent:#3CC9B9; --accent-2:#5FDACB; --accent-wash:#12302D;
+    --flag:#EC8A7E; --flag-wash:#3A1F1C; --amber:#DDB066; --amber-wash:#33290F;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0A1112; --paper-2:#0F1819; --surface:#101A1B; --surface-2:#162223;
+  --ink:#E6EEED; --ink-2:#A7B8B5; --ink-3:#7B8D8A; --rule:#22322F; --rule-2:#2E4240;
+  --accent:#3CC9B9; --accent-2:#5FDACB; --accent-wash:#12302D;
+  --flag:#EC8A7E; --flag-wash:#3A1F1C; --amber:#DDB066; --amber-wash:#33290F;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15.5px/1.6 var(--f-body);padding-inline:20px;padding-block:48px 88px}
+.page{max-width:var(--wide);margin-inline:auto;display:grid;gap:48px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.12}
+h2{font-size:1.5rem;line-height:1.2}
+h3{font-size:1.08rem;line-height:1.3}
+p{margin:0}
+code{font-family:var(--f-mono);font-size:.84em;background:var(--paper-2);padding:.06em .35em;border-radius:3px;overflow-wrap:anywhere}
+.eyebrow{font:600 .7rem/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.muted{color:var(--ink-3)}
+.col{max-width:var(--measure)}
+.stack{display:grid;gap:14px}
+header{display:grid;gap:16px;padding-bottom:32px;border-bottom:1px solid var(--rule-2)}
+.lede{font-size:1.08rem;color:var(--ink-2);max-width:var(--measure)}
+
+.rule{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:6px;padding:20px 22px;display:grid;gap:8px}
+.rule strong{font-weight:600}
+
+.steps{list-style:none;margin:0;padding:0;counter-reset:step;border-top:1px solid var(--rule-2)}
+.step{counter-increment:step;display:grid;grid-template-columns:52px minmax(0,1fr) 190px;gap:20px;padding-block:22px;border-bottom:1px solid var(--rule)}
+.step::before{content:counter(step);font-family:var(--f-display);font-size:2rem;line-height:1;color:var(--accent)}
+.step-body{display:grid;gap:10px;max-width:var(--measure)}
+.step-body ul{margin:0;padding-left:1.1rem;display:grid;gap:5px;color:var(--ink-2)}
+.done{font-size:.88rem;color:var(--ink-2);background:var(--accent-wash);border-radius:4px;padding:7px 10px}
+.done b{color:var(--accent-2);font-weight:600}
+.side{display:grid;gap:10px;align-content:start;font-size:.82rem;color:var(--ink-3)}
+.side div{display:grid;gap:2px}
+.side b{font:600 .64rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase}
+.side span{color:var(--ink-2)}
+.opt{display:inline-block;font:600 .66rem/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--amber);background:var(--amber-wash);padding:3px 7px;border-radius:999px;vertical-align:2px;margin-left:6px}
+
+.table{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:620px}
+th{font:600 .68rem/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule-2)}
+td{padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+
+.note{background:var(--surface-2);border:1px dashed var(--rule-2);border-radius:6px;padding:18px 20px;display:grid;gap:8px;font-size:.93rem;color:var(--ink-2)}
+
+@media (max-width:720px){
+  .step{grid-template-columns:36px minmax(0,1fr)}
+  .step::before{font-size:1.5rem}
+  .side{grid-column:2;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+}
+</style>
+
+<main class="page">
+
+<header>
+  <span class="eyebrow">ScanB platform · checklist · verified against the code on 15 Sep 2026</span>
+  <h1>Adding a customer to ScanB AI</h1>
+  <p class="lede">A new customer in the Web App gets ScanB AI only after the AI has that customer's data. Work through these steps in order. Each one names the repo it touches and how to tell it's done.</p>
+</header>
+
+<section class="rule">
+  <span class="eyebrow">One name, everywhere</span>
+  <p><strong>Choose the customer's AI container name once</strong> (for example <code>sb-mart</code>): lowercase letters, digits and hyphens, 3–63 characters. The same string is the blob container, the runtime folder <code>&lt;name&gt;-runtime</code>, the bot's schema registry key, and the value an admin picks in the Web App's <em>AI data container</em> dropdown. A mismatch anywhere means the AI can't find the customer's data.</p>
+</section>
+
+<section class="stack">
+  <h2>The steps</h2>
+  <ol class="steps">
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Create the storage container and load the source data</h3>
+        <ul>
+          <li>Create blob container <code>&lt;name&gt;</code> in the AI storage account.</li>
+          <li>Upload the customer's source CSV exports to the container root. The build job reads only root-level CSVs.</li>
+        </ul>
+        <p class="done"><b>Done when</b> the container lists the CSVs at its root.</p>
+      </div>
+      <div class="side"><div><b>Where</b><span>Azure Storage</span></div><div><b>UAT / prod</b><span><code>turnbtestblobstorage</code> / <code>scanbaiagent</code></span></div></div>
+    </li>
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Register the customer in the AI Bot's code</h3>
+        <ul>
+          <li><code>pipeline_runner.py</code>, <code>build_vector_index.py</code>, <code>generate_master_entity_dataset.py</code>: add a <code>CLIENT_CONFIGS</code> entry. <code>runtime_dir</code> must be <code>&lt;name&gt;-runtime</code>. If the Power BI model has the same shape as an existing customer's, reuse its ingest script, as SB Mart reuses <code>cf_kg_injest.py</code>.</li>
+          <li><code>schemas/&lt;name&gt;.py</code>, plus the <code>_REGISTRY</code> entry in <code>schemas/__init__.py</code>. This is what makes the container selectable and grantable.</li>
+          <li>The file maps in <code>graph_retriever.py</code> (graph, vector index) and <code>hybrid_resolver.py</code> (entity master, vector index).</li>
+          <li>Optional: <code>"_clients"</code> on customer-specific business rules; an <code>ENTITY_DB</code> entry in <code>evals/run_eval.py</code>.</li>
+        </ul>
+        <p class="done"><b>Done when</b> <code>.venv/Scripts/python -m pytest -m unit -q</code> passes.</p>
+      </div>
+      <div class="side"><div><b>Repo</b><span>ScanB-AI-Agent</span></div><div><b>Who</b><span>Developer</span></div></div>
+    </li>
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Build the customer's AI data</h3>
+        <ul>
+          <li>Run the pipeline job with the customer added to <code>PIPELINE_CLIENTS</code>. It builds the knowledge graph, vector index and entity master, and publishes them to the file share under <code>&lt;name&gt;-runtime/</code>.</li>
+          <li>Check the entity master's outlet codes: these are the codes the Web App's outlet import must use in step 7.</li>
+        </ul>
+        <p class="done"><b>Done when</b> <code>&lt;name&gt;-runtime/</code> holds the graph folder, the vector index and a readable <code>*_entity_master.db</code>.</p>
+      </div>
+      <div class="side"><div><b>Where</b><span>Pipeline container job → file share</span></div><div><b>Why it matters</b><span>No entity master means no access can be granted (see guardrails)</span></div></div>
+    </li>
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Deploy the AI Bot</h3>
+        <ul>
+          <li>Follow the <code>deploy-bot-uat</code> skill: preflight, build, image gate, push, release, smoke.</li>
+          <li>Add the customer to <code>PREWARM_CLIENTS</code> if its first question shouldn't pay the cold-start cost.</li>
+        </ul>
+        <p class="done"><b>Done when</b> the new revision is Healthy and the customer's Details page in the Web App lists <code>&lt;name&gt;</code> in the <em>AI data container</em> dropdown.</p>
+      </div>
+      <div class="side"><div><b>Repo</b><span>ScanB-AI-Agent</span></div><div><b>App</b><span>UAT <code>scanb-ai-agent</code> · prod <code>scanbaiagent</code></span></div></div>
+    </li>
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Set up daily insights and report summaries <span class="opt">Optional</span></h3>
+        <ul>
+          <li>Onboard the client in Auto-Insight's config wizard (Connect → Probe → Configure → Author → Deploy). Set <code>ai_content_client</code> to <code>&lt;name&gt;</code>.</li>
+          <li>Without this, the AI chat works, but the Web App shows sample insights and summaries for this customer.</li>
+        </ul>
+        <p class="done"><b>Done when</b> <code>&lt;name&gt;/ai-content/kpi/client/insights.json</code> exists after a run.</p>
+      </div>
+      <div class="side"><div><b>Repo</b><span>Auto-Insight-Generation</span></div><div><b>Docs</b><span><code>docs/config-ui.md</code></span></div></div>
+    </li>
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Create the customer in the Web App</h3>
+        <ul>
+          <li>Customers → Add: name, email domains, user limit. Roles are created automatically.</li>
+          <li>Reports tab: bind each Power BI report (its report id is also the AI summary's file name).</li>
+        </ul>
+        <p class="done"><b>Done when</b> the customer's Details and Reports tabs are complete.</p>
+      </div>
+      <div class="side"><div><b>Where</b><span>Web App, as product admin</span></div></div>
+    </li>
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Import outlets using the AI data's outlet codes</h3>
+        <ul>
+          <li>Outlets tab → import the outlet, department and section workbook.</li>
+          <li><strong>Outlet codes must match the AI data exactly</strong>: the Web App builds each access key as <code>LOCATIONCODE|DEPARTMENT|SECTION</code>. Import every outlet the customer's users should see.</li>
+        </ul>
+        <p class="done"><b>Done when</b> the outlet list matches the entity master's outlet codes from step 3.</p>
+      </div>
+      <div class="side"><div><b>Where</b><span>Web App, as product admin</span></div><div><b>What goes wrong</b><span>TurnB on UAT: <code>MH10</code> in the Web App, <code>ST1</code> in the AI data</span></div></div>
+    </li>
+
+    <li class="step">
+      <div class="step-body">
+        <h3>Add users, then switch ScanB AI on</h3>
+        <ul>
+          <li>Users tab → add users with their outlets, departments and sections. Each one gets an Azure AD guest invite.</li>
+          <li>Details → Edit: set ScanB AI to <em>Enable</em> and the AI data container to <code>&lt;name&gt;</code>. Save.</li>
+          <li>The resync preview opens on its own. Review who will get access, then Apply.</li>
+        </ul>
+        <p class="done"><b>Done when</b> the Users tab shows <em>Synced · N sections</em> for every user, and one of them can ask the AI a question.</p>
+      </div>
+      <div class="side"><div><b>Where</b><span>Web App, as product admin</span></div><div><b>From then on</b><span>Adding, editing, deactivating or deleting a user updates their AI access automatically</span></div></div>
+    </li>
+
+  </ol>
+</section>
+
+<section class="stack">
+  <div class="stack col">
+    <h2>Guardrails that catch mistakes</h2>
+    <p class="muted">Refusals change nothing. The user's row in the Users list shows the reason.</p>
+  </div>
+  <div class="table">
+    <table>
+      <thead><tr><th>Situation</th><th>What happens</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>The AI has no data for the customer</td><td>Every grant is refused: "The AI has no data for this customer yet"</td><td>Finish steps 3–4</td></tr>
+        <tr><td>A user's outlet isn't in the AI data</td><td>Refused, naming the outlets</td><td>Fix the outlet codes (step 7)</td></tr>
+        <tr><td>A save would remove AI access the Web App didn't grant</td><td>Refused: "would remove N of M sections"</td><td>Product admin: Details → Resync, review, Apply</td></tr>
+        <tr><td>The email already has AI access under another customer</td><td>Refused as a tenant move</td><td>Resolve which customer the person belongs to</td></tr>
+        <tr><td>Customer has no AI data container set</td><td>The Web App leaves its users' AI access untouched</td><td>Set the container when the data is ready</td></tr>
+        <tr><td>AI service unreachable</td><td>The user save still succeeds; AI status shows Failed</td><td>Retry on the user's row</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="note">
+  <span class="eyebrow">Worth fixing</span>
+  <p>Step 2 touches six files because each module keeps its own customer map. A single customer registry in the AI Bot, read by the pipeline, schemas, retriever and resolver, would make adding a customer's code a one-file change and remove the chance of a missed map.</p>
+</section>
+
+</main>

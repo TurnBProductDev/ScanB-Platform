@@ -1,0 +1,1488 @@
+<title>Inside ScanB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root {
+  --paper:      #f4f6f4;
+  --surface:    #ffffff;
+  --surface-2:  #e9eeec;
+  --ink:        #16211f;
+  --ink-2:      #3d4b48;
+  --muted:      #6a7a76;
+  --line:       #d2dad7;
+  --line-soft:  #e2e8e6;
+  --accent:     #0f6e63;
+  --accent-2:   #0b524a;
+  --accent-soft:#dfeeeb;
+  --live:       #2f7d4f;
+  --live-soft:  #e2efe7;
+  --dev:        #a8501f;
+  --dev-soft:   #f6ebe3;
+
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:      #0e1413;
+    --surface:    #151d1b;
+    --surface-2:  #1d2725;
+    --ink:        #e4eae7;
+    --ink-2:      #b6c4c0;
+    --muted:      #869491;
+    --line:       #2b3634;
+    --line-soft:  #222c2a;
+    --accent:     #48c9b2;
+    --accent-2:   #6fd9c6;
+    --accent-soft:#16302c;
+    --live:       #5cb87f;
+    --live-soft:  #17281d;
+    --dev:        #dc9060;
+    --dev-soft:   #2d2119;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:      #0e1413;
+  --surface:    #151d1b;
+  --surface-2:  #1d2725;
+  --ink:        #e4eae7;
+  --ink-2:      #b6c4c0;
+  --muted:      #869491;
+  --line:       #2b3634;
+  --line-soft:  #222c2a;
+  --accent:     #48c9b2;
+  --accent-2:   #6fd9c6;
+  --accent-soft:#16302c;
+  --live:       #5cb87f;
+  --live-soft:  #17281d;
+  --dev:        #dc9060;
+  --dev-soft:   #2d2119;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16.5px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------- shell */
+
+.shell {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  gap: 64px;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 40px 140px;
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 52px 0 40px;
+  border-right: 1px solid var(--line-soft);
+  margin-right: -32px;
+}
+
+.rail__mark {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.rail__sub {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 26px;
+}
+
+.rail ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rail a {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+  padding: 5px 0;
+  text-decoration: none;
+  color: var(--ink-2);
+  font-family: var(--f-display);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  border-radius: 3px;
+}
+
+.rail a:hover { color: var(--accent); }
+.rail a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.rail a span:first-child {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--muted);
+  padding-top: 2px;
+}
+
+main { min-width: 0; padding-top: 52px; }
+
+/* ---------------------------------------------------------- masthead */
+
+.masthead { margin-bottom: 76px; }
+
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.masthead h1 {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(38px, 6vw, 60px);
+  line-height: 1.02;
+  letter-spacing: -0.032em;
+  margin: 0 0 22px;
+  text-wrap: balance;
+  max-width: 15ch;
+}
+
+.masthead .standfirst {
+  font-size: 19.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 60ch;
+  margin: 0 0 34px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+}
+
+.meta div {
+  padding-right: 34px;
+  margin-right: 34px;
+  border-right: 1px solid var(--line-soft);
+}
+.meta div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+
+.meta dt {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.meta dd {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------- sections */
+
+section { margin-bottom: 84px; scroll-margin-top: 24px; }
+
+.sec-head {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  border-top: 2px solid var(--ink);
+  padding-top: 14px;
+  margin-bottom: 30px;
+}
+
+.sec-head .num {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.sec-head h2 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(24px, 3.2vw, 31px);
+  line-height: 1.1;
+  letter-spacing: -0.024em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  margin: 40px 0 12px;
+  text-wrap: balance;
+}
+
+h4 {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 30px 0 10px;
+}
+
+p { max-width: 68ch; margin: 0 0 17px; }
+.prose > ul, .prose > ol { max-width: 66ch; }
+
+ul, ol { padding-left: 20px; margin: 0 0 18px; }
+li { margin-bottom: 8px; }
+li::marker { color: var(--muted); }
+
+strong { font-weight: 600; color: var(--ink); }
+em { font-style: italic; }
+
+code {
+  font-family: var(--f-mono);
+  font-size: 0.845em;
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--ink-2);
+}
+
+a { color: var(--accent); }
+
+.lede {
+  font-size: 18.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 62ch;
+  margin-bottom: 24px;
+}
+
+/* ---------------------------------------------------------- say-it inset */
+
+.sayit {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 16px 22px 18px;
+  margin: 30px 0 8px;
+  max-width: 68ch;
+  border-radius: 0 4px 4px 0;
+}
+
+.sayit .eyebrow { margin-bottom: 7px; color: var(--accent-2); }
+
+.sayit p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------- pills */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+
+.pill--live { background: var(--live-soft); color: var(--live); }
+.pill--dev  { background: var(--dev-soft);  color: var(--dev); }
+
+.pill::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---------------------------------------------------------- tables */
+
+.tbl-wrap { overflow-x: auto; margin: 24px 0 28px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+  min-width: 520px;
+}
+
+th {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  font-weight: 400;
+  padding: 0 16px 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+td {
+  padding: 11px 16px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+
+td:last-child, th:last-child { padding-right: 0; }
+tbody tr:last-child td { border-bottom: 1px solid var(--line); }
+
+.t-name { font-family: var(--f-display); font-weight: 600; font-size: 14px; }
+.t-note { color: var(--ink-2); }
+
+/* ---------------------------------------------------------- figures */
+
+figure {
+  margin: 34px 0;
+  padding: 26px 26px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: 5px;
+}
+
+figure svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  color: var(--ink-2);
+}
+
+figcaption {
+  margin-top: 18px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 74ch;
+}
+
+figcaption b { color: var(--ink-2); font-weight: 600; }
+
+.svg-box   { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+.svg-box-a { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+.svg-box-d { fill: var(--dev-soft); stroke: var(--dev); stroke-width: 1.2; }
+.svg-t     { font-family: var(--f-display); font-size: 12px; font-weight: 600; fill: var(--ink); }
+.svg-t-sm  { font-family: var(--f-display); font-size: 10.5px; font-weight: 500; fill: var(--ink-2); }
+.svg-lbl   { font-family: var(--f-mono); font-size: 9.5px; fill: var(--muted); letter-spacing: 0.03em; }
+.svg-lbl-a { font-family: var(--f-mono); font-size: 9.5px; fill: var(--accent); letter-spacing: 0.03em; }
+.svg-hd    { font-family: var(--f-mono); font-size: 10px; fill: var(--accent); letter-spacing: 0.1em; }
+.svg-line  { stroke: var(--ink-2); stroke-width: 1.3; fill: none; }
+.svg-line-a{ stroke: var(--accent); stroke-width: 1.6; fill: none; }
+.svg-line-d{ stroke: var(--dev); stroke-width: 1.3; fill: none; stroke-dasharray: 4 3; }
+.svg-dash  { stroke: var(--ink-2); stroke-width: 1.2; fill: none; stroke-dasharray: 5 4; }
+.svg-rule  { stroke: var(--line); stroke-width: 1; }
+
+/* ---------------------------------------------------------- cards */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 26px 0 30px;
+}
+
+.card {
+  background: var(--surface);
+  padding: 22px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.card__tag {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.card__name {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 16.5px;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+
+.card p { font-size: 14.5px; margin: 0; color: var(--ink-2); line-height: 1.5; }
+
+.card__stack {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------- azure groups */
+
+.groups { display: flex; flex-direction: column; gap: 0; margin: 26px 0 30px; }
+
+.group {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: 24px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.group:first-child { border-top: 1px solid var(--line); }
+.group:last-child { border-bottom: 1px solid var(--line); }
+
+.group__label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  padding-top: 1px;
+}
+
+.group__body { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+.group__body p { margin: 0 0 6px; max-width: 64ch; }
+.group__body p:last-child { margin-bottom: 0; }
+.group__body b { color: var(--ink); font-weight: 600; }
+
+/* ---------------------------------------------------------- layers */
+
+.layers { counter-reset: lyr; margin: 26px 0 8px; }
+
+.layer {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 18px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.layer:last-child { border-bottom: 1px solid var(--line-soft); }
+
+.layer::before {
+  counter-increment: lyr;
+  content: counter(lyr, decimal-leading-zero);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--accent);
+  padding-top: 3px;
+}
+
+.layer h3 { margin: 0 0 5px; font-size: 15.5px; }
+.layer p { margin: 0; font-size: 14.5px; color: var(--ink-2); max-width: 64ch; }
+
+/* ---------------------------------------------------------- glossary */
+
+.gloss {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0 44px;
+  margin: 22px 0;
+}
+
+.gloss div {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.gloss dt {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 3px;
+}
+
+.gloss dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------- footer */
+
+.colophon {
+  margin-top: 92px;
+  padding-top: 22px;
+  border-top: 2px solid var(--ink);
+  font-size: 13.5px;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.colophon p { max-width: none; }
+
+/* ---------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; gap: 0; padding: 0 24px 90px; }
+  .rail {
+    position: static;
+    max-height: none;
+    border-right: 0;
+    margin-right: 0;
+    border-bottom: 1px solid var(--line-soft);
+    padding: 34px 0 22px;
+  }
+  .rail ol {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+  }
+  .rail a { padding: 3px 0; }
+  main { padding-top: 40px; }
+  .meta div { border-right: 0; padding-right: 0; margin-right: 26px; margin-bottom: 10px; }
+  .group { grid-template-columns: 1fr; gap: 6px; }
+  figure { padding: 18px 16px 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+html { scroll-behavior: smooth; }
+</style>
+
+<div class="shell">
+
+<nav class="rail" aria-label="Contents">
+  <div class="rail__mark">Inside ScanB</div>
+  <div class="rail__sub">Internal brief</div>
+  <ol>
+    <li><a href="#s1"><span>01</span><span>What ScanB is</span></a></li>
+    <li><a href="#s2"><span>02</span><span>What a customer gets</span></a></li>
+    <li><a href="#s3"><span>03</span><span>The three engines</span></a></li>
+    <li><a href="#s4"><span>04</span><span>The agent that answers</span></a></li>
+    <li><a href="#s5"><span>05</span><span>The agent that reports</span></a></li>
+    <li><a href="#s6"><span>06</span><span>Why it isn't a chatbot</span></a></li>
+    <li><a href="#s7"><span>07</span><span>Running on Azure</span></a></li>
+    <li><a href="#s8"><span>08</span><span>Data security</span></a></li>
+    <li><a href="#s9"><span>09</span><span>How we know it works</span></a></li>
+    <li><a href="#s10"><span>10</span><span>In development</span></a></li>
+    <li><a href="#gloss"><span>—</span><span>Glossary</span></a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="masthead">
+  <div class="eyebrow">Internal reference · not for direct distribution</div>
+  <h1>Inside ScanB</h1>
+  <p class="standfirst">How the platform is built, how its two AI agents actually work, what it runs on, and how one customer's data is kept away from another's. Written so anyone on the team can explain it — to a prospective client, or to a vendor's architect.</p>
+  <dl class="meta">
+    <div><dt>Scope</dt><dd>3 codebases · Azure footprint · security</dd></div>
+    <div><dt>Audience</dt><dd>Team, prospects, vendors</dd></div>
+    <div><dt>Customer names</dt><dd>Deliberately excluded</dd></div>
+  </dl>
+</header>
+
+<!-- ================================================== 01 -->
+<section id="s1">
+  <div class="sec-head"><span class="num">01</span><h2>What ScanB is</h2></div>
+  <div class="prose">
+
+  <p class="lede">ScanB is an AI analytics platform for retailers. A retailer's data already sits in Power BI. ScanB puts a product around it that answers questions, and one that raises them.</p>
+
+  <p>A store manager signs in with their normal work account and gets three things in one place:</p>
+
+  <ul>
+    <li><strong>The reports they already know</strong> — their Power BI reports, embedded, with the access rules their business already has.</li>
+    <li><strong>Analysis nobody had to ask for</strong> — every morning, written overnight: what moved, by how much, and why it probably moved.</li>
+    <li><strong>An assistant they can just ask</strong> — <em>"which branches are below target this week?"</em> — in plain English, answered from their own data.</li>
+  </ul>
+
+  <p>Behind that are three independently developed systems. They ship as one product but share no code — they talk to each other only over HTTPS and shared storage, which is what lets each one be worked on, tested and released without waiting for the other two.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 310" role="img" aria-label="Data flows from the Power BI semantic model into Auto-Insight, which writes files into Azure Blob Storage. The AI Bot reads AI content from storage and serves it to the Web App, which also reads dashboard files directly. The Web App additionally asks the AI Bot live questions.">
+      <defs>
+        <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="currentColor"/>
+        </marker>
+        <marker id="ar1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <!-- power bi -->
+      <rect class="svg-box" x="8"   y="112" width="122" height="62" rx="4"/>
+      <text class="svg-t"    x="69"  y="138" text-anchor="middle">Power BI</text>
+      <text class="svg-t-sm" x="69"  y="154" text-anchor="middle">semantic model</text>
+
+      <!-- auto insight -->
+      <rect class="svg-box" x="170" y="112" width="140" height="62" rx="4"/>
+      <text class="svg-lbl"  x="240" y="105" text-anchor="middle">REPO 3</text>
+      <text class="svg-t"    x="240" y="138" text-anchor="middle">Auto-Insight</text>
+      <text class="svg-t-sm" x="240" y="154" text-anchor="middle">the generator</text>
+
+      <!-- blob -->
+      <rect class="svg-box" x="352" y="52"  width="164" height="182" rx="4"/>
+      <text class="svg-lbl"  x="434" y="45"  text-anchor="middle">ONE PER CUSTOMER</text>
+      <text class="svg-t"    x="434" y="76"  text-anchor="middle">Azure Blob Storage</text>
+      <rect class="svg-box" x="368" y="92"  width="132" height="46" rx="3"/>
+      <text class="svg-t-sm" x="434" y="112" text-anchor="middle">ai-content/</text>
+      <text class="svg-lbl"  x="434" y="127" text-anchor="middle">summaries · KPIs</text>
+      <rect class="svg-box" x="368" y="158" width="132" height="46" rx="3"/>
+      <text class="svg-t-sm" x="434" y="178" text-anchor="middle">html-dashboards/</text>
+      <text class="svg-lbl"  x="434" y="193" text-anchor="middle">built pages</text>
+
+      <!-- ai bot -->
+      <rect class="svg-box" x="560" y="62"  width="136" height="62" rx="4"/>
+      <text class="svg-lbl"  x="628" y="55"  text-anchor="middle">REPO 2</text>
+      <text class="svg-t"    x="628" y="88"  text-anchor="middle">AI Bot</text>
+      <text class="svg-t-sm" x="628" y="104" text-anchor="middle">the answer engine</text>
+
+      <!-- web app -->
+      <rect class="svg-box-a" x="738" y="112" width="134" height="72" rx="4"/>
+      <text class="svg-lbl-a" x="805" y="105" text-anchor="middle">REPO 1</text>
+      <text class="svg-t"     x="805" y="140" text-anchor="middle">Web App</text>
+      <text class="svg-t-sm"  x="805" y="156" text-anchor="middle">what the customer</text>
+      <text class="svg-t-sm"  x="805" y="170" text-anchor="middle">actually sees</text>
+
+      <!-- user -->
+      <rect class="svg-box" x="738" y="238" width="134" height="46" rx="4"/>
+      <text class="svg-t"    x="805" y="266" text-anchor="middle">Retail team</text>
+
+      <!-- arrows -->
+      <line class="svg-line" x1="130" y1="143" x2="164" y2="143" marker-end="url(#ar1)"/>
+      <text class="svg-lbl"  x="147" y="133" text-anchor="middle">reads</text>
+
+      <line class="svg-line" x1="310" y1="143" x2="346" y2="143" marker-end="url(#ar1)"/>
+      <text class="svg-lbl"  x="328" y="133" text-anchor="middle">writes</text>
+
+      <line class="svg-line" x1="500" y1="115" x2="554" y2="99" marker-end="url(#ar1)"/>
+      <text class="svg-lbl"  x="527" y="99"  text-anchor="middle">reads</text>
+
+      <line class="svg-line" x1="696" y1="99" x2="732" y2="127" marker-end="url(#ar1)"/>
+      <text class="svg-lbl"  x="722" y="96"  text-anchor="middle">serves</text>
+
+      <polyline class="svg-line" points="500,181 624,181 624,166 732,166" marker-end="url(#ar1)"/>
+      <text class="svg-lbl"  x="576" y="174" text-anchor="middle">reads directly</text>
+
+      <polyline class="svg-line-a" points="778,112 778,26 628,26 628,58" marker-end="url(#ar1a)"/>
+      <text class="svg-lbl-a" x="703" y="19" text-anchor="middle">live questions · signed-in user's token</text>
+
+      <line class="svg-line" x1="805" y1="184" x2="805" y2="234" marker-end="url(#ar1)"/>
+    </svg>
+    <figcaption><b>Auto-Insight and the Web App never call each other.</b> Everything the generator produces reaches the customer through storage — read back either by the AI Bot, or by the Web App directly. Each repository can be released on its own schedule because the only things they share are a file layout and an HTTP contract.</figcaption>
+  </figure>
+
+  <div class="sayit">
+    <div class="eyebrow">Say it like this</div>
+    <p>"Your Power BI stays where it is. We put an AI layer on top of it that writes your analysis overnight and answers questions during the day — inside your own Microsoft tenant."</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================================================== 02 -->
+<section id="s2">
+  <div class="sec-head"><span class="num">02</span><h2>What a customer gets</h2></div>
+  <div class="prose">
+
+  <p>The whole product surface, and where each part stands today. Anything marked <span class="pill pill--dev">In development</span> is designed and visible in the product, but not yet doing the full job end to end.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th style="width:31%">Capability</th><th style="width:52%">What it does for the user</th><th style="width:17%">Status</th></tr></thead>
+    <tbody>
+      <tr><td class="t-name">Single sign-on</td><td class="t-note">Signs in with the customer's own Microsoft work account. No separate password; the customer's own MFA and conditional-access rules apply.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Report catalogue</td><td class="t-note">Reports grouped into modules, with per-role and per-user access granted by an administrator.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Embedded Power BI</td><td class="t-note">The customer's existing reports, rendered in ScanB with a per-user embed token.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">HTML dashboards</td><td class="t-note">Purpose-built dashboard pages served only to signed-in, entitled users.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">KPI hub</td><td class="t-note">A daily board of AI-written insight cards and alerts across every module, with a drill-in drawer per finding.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">AI report summaries</td><td class="t-note">A written analysis attached to each report, refreshed daily, with a dated archive so you can reread what the business looked like on any past day.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Interactive briefing</td><td class="t-note">A four-layer page — Overview, Entities, Areas, Detail — in two time views, with charts, ranked movers and red/amber/green bands on every measure.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Ask ScanB</td><td class="t-note">Plain-English questions answered from the customer's own data, returning a written answer plus a chart and a downloadable table.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Saved conversations</td><td class="t-note">History per user, searchable, resumable, with follow-up questions understood in context.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Answer feedback</td><td class="t-note">Thumbs up or down on any answer, captured for quality review.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Ask AI from a finding</td><td class="t-note">One click from an insight card into the assistant, carrying that finding's context into the question.</td><td><span class="pill pill--live">Live</span></td></tr>
+      <tr><td class="t-name">Ask Team</td><td class="t-note">Hand a finding to a colleague to action. The route out of the insight drawer exists in the product; assignment and notification are still being built.</td><td><span class="pill pill--dev">In development</span></td></tr>
+      <tr><td class="t-name">Multi-step reasoning</td><td class="t-note">For "why" questions, the assistant plans several queries, runs them, checks whether the plan actually answered the question, and revises. Built and unit-tested; being validated for answer quality before it is switched on.</td><td><span class="pill pill--dev">In development</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================================================== 03 -->
+<section id="s3">
+  <div class="sec-head"><span class="num">03</span><h2>The three engines</h2></div>
+  <div class="prose">
+
+  <p>Three repositories, three jobs, three technology choices made for the job rather than for consistency.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card__tag">Repo 1 · The front door</div>
+      <p class="card__name">Web App</p>
+      <p>Everything the customer sees. Sign-in, entitlements, the report catalogue, dashboards, the KPI hub and the assistant's interface. It holds no analytics logic of its own — it asks the other two.</p>
+      <div class="card__stack">ASP.NET Core 8 MVC<br>Entity Framework Core<br>SQL Server (config)<br>Microsoft Entra ID<br>Power BI Embedded</div>
+    </div>
+    <div class="card">
+      <div class="card__tag">Repo 2 · The answer engine</div>
+      <p class="card__name">AI Bot</p>
+      <p>Turns a natural-language question into a grounded answer over a retail knowledge graph, enforcing what that specific user is allowed to see. Also serves the stored AI content the generator publishes.</p>
+      <div class="card__stack">Python · FastAPI<br>LangGraph agent<br>Kuzu graph database<br>FAISS vector index<br>DuckDB · Azure OpenAI</div>
+    </div>
+    <div class="card">
+      <div class="card__tag">Repo 3 · The generator</div>
+      <p class="card__name">Auto-Insight</p>
+      <p>Runs unattended against a Power BI semantic model and produces the daily KPI insights and per-report analysis, then publishes them to storage for the other two to pick up.</p>
+      <div class="card__stack">Python · LangGraph<br>Power BI REST API<br>Auto-generated DAX<br>Azure Container Apps Jobs<br>Azure OpenAI</div>
+    </div>
+  </div>
+
+  <p>Two of the three are AI agents, and they are not the same kind of agent. One is <strong>reactive</strong> — it waits for a question. The other is <strong>proactive</strong> — it decides on its own what is worth saying, and says it before anyone asks. That difference is the heart of the product.</p>
+
+  <figure>
+    <svg viewBox="0 0 840 250" role="img" aria-label="Two lanes. The top lane shows a person asking a question and getting an answer in seconds, on demand. The bottom lane shows a scheduled overnight run producing a published briefing waiting in the morning.">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="currentColor"/>
+        </marker>
+        <marker id="ar2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <!-- lane 1 -->
+      <text class="svg-hd" x="8" y="20">ASK · REACTIVE</text>
+      <line class="svg-rule" x1="8" y1="30" x2="832" y2="30"/>
+
+      <rect class="svg-box" x="8"   y="48" width="132" height="52" rx="4"/>
+      <text class="svg-t"    x="74"  y="70" text-anchor="middle">A manager</text>
+      <text class="svg-t-sm" x="74"  y="86" text-anchor="middle">asks a question</text>
+
+      <rect class="svg-box-a" x="248" y="48" width="176" height="52" rx="4"/>
+      <text class="svg-t"     x="336" y="70" text-anchor="middle">AI Bot</text>
+      <text class="svg-t-sm"  x="336" y="86" text-anchor="middle">plans · queries · verifies</text>
+
+      <rect class="svg-box" x="532" y="48" width="176" height="52" rx="4"/>
+      <text class="svg-t"    x="620" y="70" text-anchor="middle">Answer + chart</text>
+      <text class="svg-t-sm" x="620" y="86" text-anchor="middle">in seconds</text>
+
+      <line class="svg-line" x1="140" y1="74" x2="242" y2="74" marker-end="url(#ar2)"/>
+      <text class="svg-lbl"  x="191" y="65" text-anchor="middle">one question</text>
+      <line class="svg-line" x1="424" y1="74" x2="526" y2="74" marker-end="url(#ar2)"/>
+      <text class="svg-lbl"  x="475" y="65" text-anchor="middle">grounded reply</text>
+      <text class="svg-lbl"  x="724" y="70">the user set</text>
+      <text class="svg-lbl"  x="724" y="83">the agenda</text>
+
+      <!-- lane 2 -->
+      <text class="svg-hd" x="8" y="150">TELL · PROACTIVE</text>
+      <line class="svg-rule" x1="8" y1="160" x2="832" y2="160"/>
+
+      <rect class="svg-box" x="8"   y="178" width="132" height="52" rx="4"/>
+      <text class="svg-t"    x="74"  y="200" text-anchor="middle">A schedule</text>
+      <text class="svg-t-sm" x="74"  y="216" text-anchor="middle">nobody asked</text>
+
+      <rect class="svg-box-a" x="248" y="178" width="176" height="52" rx="4"/>
+      <text class="svg-t"     x="336" y="200" text-anchor="middle">Auto-Insight</text>
+      <text class="svg-t-sm"  x="336" y="216" text-anchor="middle">scans · ranks · explains</text>
+
+      <rect class="svg-box" x="532" y="178" width="176" height="52" rx="4"/>
+      <text class="svg-t"    x="620" y="200" text-anchor="middle">A briefing, waiting</text>
+      <text class="svg-t-sm" x="620" y="216" text-anchor="middle">by morning</text>
+
+      <line class="svg-line" x1="140" y1="204" x2="242" y2="204" marker-end="url(#ar2)"/>
+      <text class="svg-lbl"  x="191" y="195" text-anchor="middle">every night</text>
+      <line class="svg-line" x1="424" y1="204" x2="526" y2="204" marker-end="url(#ar2)"/>
+      <text class="svg-lbl"  x="475" y="195" text-anchor="middle">published</text>
+      <text class="svg-lbl"  x="724" y="200">the agent set</text>
+      <text class="svg-lbl"  x="724" y="213">the agenda</text>
+    </svg>
+    <figcaption>The same underlying technology, pointed in opposite directions. <b>The second lane is the harder problem</b> — deciding what is worth saying when nobody has told you what to look for, and not repeating yourself tomorrow.</figcaption>
+  </figure>
+
+  </div>
+</section>
+
+<!-- ================================================== 04 -->
+<section id="s4">
+  <div class="sec-head"><span class="num">04</span><h2>The agent that answers</h2></div>
+  <div class="prose">
+
+  <p class="lede">A question in plain English becomes a database query, gets restricted to what that user may see, runs against a retail knowledge graph, and comes back checked.</p>
+
+  <p>The assistant is not a single prompt to a language model. It is a state machine with ten defined stages, each of which can fail safely and hand control somewhere sensible. Some stages use a model; most do not.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 410" role="img" aria-label="A ten-stage pipeline. The first row resolves the request, identifies entities and chooses an approach. The second row writes a graph query, validates it with a retry loop, applies the user's row-level permissions, runs it against the knowledge graph, verifies the numbers and replies. If the query cannot be secured, it is refused rather than run.">
+      <defs>
+        <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="currentColor"/>
+        </marker>
+        <marker id="ar3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="var(--accent)"/>
+        </marker>
+        <marker id="ar3d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="var(--dev)"/>
+        </marker>
+      </defs>
+
+      <text class="svg-hd" x="8" y="18">STAGE 1 — UNDERSTAND THE QUESTION</text>
+
+      <rect class="svg-box" x="8"   y="34" width="196" height="58" rx="4"/>
+      <text class="svg-t"    x="106" y="58" text-anchor="middle">Check the token</text>
+      <text class="svg-t-sm" x="106" y="75" text-anchor="middle">who is asking, and for whom</text>
+
+      <rect class="svg-box" x="222" y="34" width="196" height="58" rx="4"/>
+      <text class="svg-t"    x="320" y="58" text-anchor="middle">Resolve the question</text>
+      <text class="svg-t-sm" x="320" y="75" text-anchor="middle">"and for ST1?" → full question</text>
+
+      <rect class="svg-box" x="436" y="34" width="196" height="58" rx="4"/>
+      <text class="svg-t"    x="534" y="58" text-anchor="middle">Identify what they meant</text>
+      <text class="svg-t-sm" x="534" y="75" text-anchor="middle">stores · SKUs · brands</text>
+
+      <rect class="svg-box" x="650" y="34" width="196" height="58" rx="4"/>
+      <text class="svg-t"    x="748" y="58" text-anchor="middle">Choose the approach</text>
+      <text class="svg-t-sm" x="748" y="75" text-anchor="middle">lookup, diagnosis or plan</text>
+
+      <line class="svg-line" x1="204" y1="63" x2="216" y2="63" marker-end="url(#ar3)"/>
+      <line class="svg-line" x1="418" y1="63" x2="430" y2="63" marker-end="url(#ar3)"/>
+      <line class="svg-line" x1="632" y1="63" x2="644" y2="63" marker-end="url(#ar3)"/>
+
+      <polyline class="svg-line" points="846,63 864,63 864,124 106,124 106,168" marker-end="url(#ar3)"/>
+
+      <text class="svg-hd" x="8" y="152">STAGE 2 — ANSWER IT SAFELY</text>
+
+      <rect class="svg-box" x="8"   y="168" width="152" height="60" rx="4"/>
+      <text class="svg-t"    x="84"  y="192" text-anchor="middle">Write the query</text>
+      <text class="svg-t-sm" x="84"  y="209" text-anchor="middle">model writes Cypher</text>
+
+      <rect class="svg-box" x="180" y="168" width="152" height="60" rx="4"/>
+      <text class="svg-t"    x="256" y="192" text-anchor="middle">Validate it</text>
+      <text class="svg-t-sm" x="256" y="209" text-anchor="middle">against the real schema</text>
+
+      <rect class="svg-box-a" x="352" y="168" width="164" height="60" rx="4"/>
+      <text class="svg-t"     x="434" y="186" text-anchor="middle">Apply the user's</text>
+      <text class="svg-t"     x="434" y="201" text-anchor="middle">row permissions</text>
+      <text class="svg-lbl-a" x="434" y="217" text-anchor="middle">REWRITTEN, NOT FILTERED AFTER</text>
+
+      <rect class="svg-box" x="536" y="168" width="152" height="60" rx="4"/>
+      <text class="svg-t"    x="612" y="192" text-anchor="middle">Run it</text>
+      <text class="svg-t-sm" x="612" y="209" text-anchor="middle">on the knowledge graph</text>
+
+      <rect class="svg-box" x="708" y="168" width="152" height="60" rx="4"/>
+      <text class="svg-t"    x="784" y="192" text-anchor="middle">Check the answer</text>
+      <text class="svg-t-sm" x="784" y="209" text-anchor="middle">numbers vs the rows</text>
+
+      <line class="svg-line" x1="160" y1="198" x2="174" y2="198" marker-end="url(#ar3)"/>
+      <line class="svg-line" x1="332" y1="198" x2="346" y2="198" marker-end="url(#ar3)"/>
+      <line class="svg-line" x1="516" y1="198" x2="530" y2="198" marker-end="url(#ar3)"/>
+      <line class="svg-line" x1="688" y1="198" x2="702" y2="198" marker-end="url(#ar3)"/>
+
+      <!-- retry loop -->
+      <polyline class="svg-dash" points="256,228 256,258 84,258 84,232" marker-end="url(#ar3)"/>
+      <text class="svg-lbl" x="170" y="272" text-anchor="middle">didn't match the schema — rewrite, up to 3 times</text>
+
+      <!-- fail closed -->
+      <polyline class="svg-line-d" points="434,228 434,306" marker-end="url(#ar3d)"/>
+      <rect class="svg-box-d" x="330" y="306" width="208" height="46" rx="4"/>
+      <text class="svg-t"    x="434" y="325" text-anchor="middle">Cannot be secured → refused</text>
+      <text class="svg-lbl"  x="434" y="341" text-anchor="middle">never run without the restriction</text>
+
+      <!-- reply -->
+      <rect class="svg-box" x="708" y="306" width="152" height="46" rx="4"/>
+      <text class="svg-t"    x="784" y="325" text-anchor="middle">Reply</text>
+      <text class="svg-lbl"  x="784" y="341" text-anchor="middle">text · chart · table</text>
+      <line class="svg-line" x1="784" y1="228" x2="784" y2="302" marker-end="url(#ar3)"/>
+
+      <text class="svg-lbl" x="8" y="384">Ten stages. Two use a language model to write text; the permission, validation and verification stages are ordinary code.</text>
+    </svg>
+    <figcaption>The <b>permission stage rewrites the query itself</b> rather than filtering results afterwards — the database never returns a row the user was not entitled to, so there is nothing to accidentally leak downstream. A query the enforcer cannot secure is refused outright.</figcaption>
+  </figure>
+
+  <h3>What it queries, and why a graph</h3>
+
+  <p>Retail questions are questions about relationships: this SKU, in that store, in this brand, over that period, compared with its peers. Those are cheap to answer on a graph and expensive to answer on wide tables. So each customer's data is loaded into three complementary stores:</p>
+
+  <ul>
+    <li>A <strong>knowledge graph</strong> (Kuzu) holding stores, products, brands, categories, suppliers and the sales and stock relationships between them — this is what the generated query actually runs against.</li>
+    <li>A <strong>vector index</strong> (FAISS) that maps what a person typed to what the data actually calls it. "Fresh chicken", "FRESH CHICKEN & PARTS" and a SKU code all need to resolve to the same thing.</li>
+    <li>An <strong>entity master</strong> (DuckDB) for exact and alias lookups, tried first because it is both faster and more certain than a similarity search.</li>
+  </ul>
+
+  <p>Resolution runs those in order — exact, then alias, then meaning. If it still cannot tell which of two things the user meant, it asks rather than guesses.</p>
+
+  <h3>The stages that stop bad answers</h3>
+
+  <p>Three of the ten stages exist only to prevent a confident wrong answer:</p>
+
+  <ul>
+    <li><strong>The validator</strong> reads the generated query and checks every table and column it mentions against the graph's real schema before it runs. A query naming something that does not exist is sent back to be rewritten, with the error text attached, up to three times.</li>
+    <li><strong>The enforcer</strong> rewrites the query to include the signed-in user's data-scope keys, recursively — including inside sub-queries, unions and optional matches, which is where a naive implementation leaks. It also blocks anything that would create, change or delete data.</li>
+    <li><strong>The verifier</strong> compares every figure in the written answer against the rows that came back. Zero rows because the data says zero is reported differently from zero rows because the user's permissions excluded them.</li>
+  </ul>
+
+  <p>Every question also leaves a full trace — each stage, each model call, timings and token counts — stored for review and automatically deleted after 30 days.</p>
+
+  <div class="sayit">
+    <div class="eyebrow">Say it like this</div>
+    <p>"It doesn't ask an AI what your numbers are. It uses AI to write a database query, checks that query against your real schema, restricts it to what that person is allowed to see, runs it, and then checks the written answer back against the rows that came out."</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================================================== 05 -->
+<section id="s5">
+  <div class="sec-head"><span class="num">05</span><h2>The agent that reports</h2></div>
+  <div class="prose">
+
+  <p class="lede">Nobody writes a query, picks a KPI or fills in a template. The agent inspects the customer's Power BI model, works out what it can measure, writes its own DAX, and decides what is worth a manager's attention today.</p>
+
+  <p>It runs unattended overnight. Each run produces two things at once, from two branches that execute concurrently: a <strong>descriptive</strong> report of what the numbers are, and an <strong>investigative</strong> report of why they look that way.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 486" role="img" aria-label="Top to bottom: the Power BI semantic model feeds a stage that reads metadata, profiles the model and understands the report. The flow then forks into a descriptive branch and an investigative branch, each with three stages, running at the same time. Both rejoin at a final stage that saves, validates and publishes.">
+      <defs>
+        <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="currentColor"/>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="230" y="8" width="260" height="46" rx="4"/>
+      <text class="svg-t"    x="360" y="28" text-anchor="middle">Power BI semantic model</text>
+      <text class="svg-lbl"  x="360" y="44" text-anchor="middle">the customer's own model, read-only</text>
+
+      <line class="svg-line" x1="360" y1="54" x2="360" y2="76" marker-end="url(#ar4)"/>
+
+      <rect class="svg-box" x="90" y="80" width="540" height="54" rx="4"/>
+      <text class="svg-t"    x="360" y="102" text-anchor="middle">Read the metadata · profile the model · understand the report</text>
+      <text class="svg-lbl"  x="360" y="120" text-anchor="middle">WHAT MEASURES EXIST · WHAT HIERARCHY THIS BUSINESS USES · WHAT THIS REPORT IS FOR</text>
+
+      <!-- fork -->
+      <polyline class="svg-line" points="360,134 360,154 185,154 185,190" marker-end="url(#ar4)"/>
+      <polyline class="svg-line" points="360,134 360,154 535,154 535,190" marker-end="url(#ar4)"/>
+      <text class="svg-lbl" x="360" y="150" text-anchor="middle">both branches run at the same time</text>
+
+      <!-- left branch -->
+      <text class="svg-hd" x="40" y="182">DESCRIPTIVE — WHAT HAPPENED</text>
+      <rect class="svg-box" x="40" y="192" width="290" height="52" rx="4"/>
+      <text class="svg-t"    x="185" y="213" text-anchor="middle">Write and run its own DAX</text>
+      <text class="svg-lbl"  x="185" y="230" text-anchor="middle">plan → generate → validate → execute</text>
+
+      <line class="svg-line" x1="185" y1="244" x2="185" y2="262" marker-end="url(#ar4)"/>
+      <rect class="svg-box" x="40" y="266" width="290" height="52" rx="4"/>
+      <text class="svg-t"    x="185" y="287" text-anchor="middle">Choose what matters today</text>
+      <text class="svg-lbl"  x="185" y="304" text-anchor="middle">rank by impact, share and surprise</text>
+
+      <line class="svg-line" x1="185" y1="318" x2="185" y2="336" marker-end="url(#ar4)"/>
+      <rect class="svg-box" x="40" y="340" width="290" height="52" rx="4"/>
+      <text class="svg-t"    x="185" y="361" text-anchor="middle">Build the evidence, then write</text>
+      <text class="svg-lbl"  x="185" y="378" text-anchor="middle">contributors · comparable stores · trend</text>
+
+      <!-- right branch -->
+      <text class="svg-hd" x="390" y="182">INVESTIGATIVE — WHY</text>
+      <rect class="svg-box" x="390" y="192" width="290" height="52" rx="4"/>
+      <text class="svg-t"    x="535" y="213" text-anchor="middle">Detect the signals</text>
+      <text class="svg-lbl"  x="535" y="230" text-anchor="middle">anomalies · streaks · week and day shifts</text>
+
+      <line class="svg-line" x1="535" y1="244" x2="535" y2="262" marker-end="url(#ar4)"/>
+      <rect class="svg-box" x="390" y="266" width="290" height="52" rx="4"/>
+      <text class="svg-t"    x="535" y="287" text-anchor="middle">Drop what was already said</text>
+      <text class="svg-lbl"  x="535" y="304" text-anchor="middle">cross-run memory of past findings</text>
+
+      <line class="svg-line" x1="535" y1="318" x2="535" y2="336" marker-end="url(#ar4)"/>
+      <rect class="svg-box" x="390" y="340" width="290" height="52" rx="4"/>
+      <text class="svg-t"    x="535" y="361" text-anchor="middle">Investigate and explain</text>
+      <text class="svg-lbl"  x="535" y="378" text-anchor="middle">chase the driver, then synthesise</text>
+
+      <!-- join -->
+      <polyline class="svg-line" points="185,392 185,414 360,414 360,432" marker-end="url(#ar4)"/>
+      <polyline class="svg-line" points="535,392 535,414 360,414" />
+      <text class="svg-lbl" x="360" y="410" text-anchor="middle">a barrier — neither output ships until both branches finish</text>
+
+      <rect class="svg-box-a" x="150" y="436" width="420" height="46" rx="4"/>
+      <text class="svg-t"     x="360" y="455" text-anchor="middle">Validate the prose · render the page · publish to storage</text>
+      <text class="svg-lbl-a" x="360" y="471" text-anchor="middle">SUMMARY · INSIGHT REPORT · INTERACTIVE DASHBOARD · KPI FEED</text>
+    </svg>
+    <figcaption>One run, two products. <b>Neither branch can block the other</b> — if the descriptive branch's queries fail, the investigative report still ships, and vice versa. The join is an explicit barrier rather than loose edges, so the publish step can never fire twice or race.</figcaption>
+  </figure>
+
+  <h3>It writes its own queries</h3>
+
+  <p>The agent is not given a query library. It reads the model's metadata, plans what it wants to know as plain intents, and generates the DAX for each one. Every generated query is checked against the real model before it runs — and if Power BI still returns an error, the exact error text is fed back once for a repair attempt rather than the query being silently dropped.</p>
+
+  <p>This is what makes onboarding a new customer configuration rather than development. Point it at a different semantic model and it discovers that business's own hierarchy — division, department, section, category — rather than expecting the one the last customer used.</p>
+
+  <h3>It decides what is worth saying</h3>
+
+  <p>The hard part of an unprompted report is relevance. A naive ranking leads with whatever moved the largest percentage, which is almost always something trivial — a category worth a rounding error can move 2,000% and mean nothing. So ranking blends three things: <strong>impact</strong> (how much of the total business the move represents), <strong>magnitude</strong> (the size of the move, capped), and <strong>unexpectedness</strong> (how far it deviates from how the rest of the estate moved). A headline also has to clear a minimum relevance floor.</p>
+
+  <p>Alongside that, the report gives <em>every</em> member of every level a ranked line, so nothing is silently omitted — the narrative is selective, the coverage is complete.</p>
+
+  <h3>It remembers what it already told you</h3>
+
+  <p>A daily report that repeats yesterday's story stops being read. The agent keeps a memory of what it has delivered and suppresses a finding that overlaps a recent one — unless something genuinely changed: a reversal in direction, a newly completed week or month, or a move large enough in both size and share to override the rotation.</p>
+
+  <h3>What it publishes</h3>
+
+  <ul>
+    <li>A <strong>written summary</strong> of the period, leading with overall performance, then the business areas that earned narrative.</li>
+    <li>An <strong>interactive four-layer dashboard</strong> — Overview, Entities, Areas, Detail — in two time views, with a revenue decomposition into transactions × basket size × price, red/amber/green bands per measure, and a calendar check that flags when a whole-estate move looks like a comparison artefact rather than a bad period.</li>
+    <li>A <strong>KPI feed</strong> of insight and alert cards for the hub.</li>
+    <li>A <strong>dated archive</strong>, so any past day's analysis can be reread exactly as it was published.</li>
+  </ul>
+
+  <div class="sayit">
+    <div class="eyebrow">Say it like this</div>
+    <p>"Every night it looks at your whole business, ranks what actually matters — not just what moved the most — writes it up with the evidence behind it, and remembers what it told you yesterday so it doesn't repeat itself."</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================================================== 06 -->
+<section id="s6">
+  <div class="sec-head"><span class="num">06</span><h2>Why it isn't a chatbot on a database</h2></div>
+  <div class="prose">
+
+  <p class="lede">This is the question every technical evaluator asks. The answer is a rule we apply everywhere: <strong>code owns the arithmetic and the structure; the language model owns only the language.</strong></p>
+
+  <p>A model that is asked to both calculate and narrate will produce a fluent number that is wrong. So it is never asked to. Every figure that reaches a customer was computed in Python or by the database. The model's job is to turn already-correct figures into readable prose — and then a validator checks that it did.</p>
+
+  <figure>
+    <svg viewBox="0 0 860 260" role="img" aria-label="A left-to-right track. Four segments owned by code — pull the numbers, do the arithmetic, decide what is worth saying, decide the page structure — feed one segment owned by the language model, writing the words. A validator gate sits between the model and the reader, sending failed drafts back to be rewritten.">
+      <defs>
+        <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="currentColor"/>
+        </marker>
+        <marker id="ar5d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="var(--dev)"/>
+        </marker>
+      </defs>
+
+      <text class="svg-hd" x="8" y="20">DETERMINISTIC CODE</text>
+      <line class="svg-rule" x1="8" y1="28" x2="486" y2="28"/>
+
+      <rect class="svg-box" x="8"   y="44" width="112" height="62" rx="4"/>
+      <text class="svg-t-sm" x="64"  y="68"  text-anchor="middle">Pull the</text>
+      <text class="svg-t-sm" x="64"  y="82"  text-anchor="middle">numbers</text>
+      <text class="svg-lbl"  x="64"  y="98"  text-anchor="middle">DAX / graph</text>
+
+      <rect class="svg-box" x="132" y="44" width="112" height="62" rx="4"/>
+      <text class="svg-t-sm" x="188" y="68"  text-anchor="middle">Do the</text>
+      <text class="svg-t-sm" x="188" y="82"  text-anchor="middle">arithmetic</text>
+      <text class="svg-lbl"  x="188" y="98"  text-anchor="middle">exact, checked</text>
+
+      <rect class="svg-box" x="256" y="44" width="112" height="62" rx="4"/>
+      <text class="svg-t-sm" x="312" y="68"  text-anchor="middle">Rank what</text>
+      <text class="svg-t-sm" x="312" y="82"  text-anchor="middle">matters</text>
+      <text class="svg-lbl"  x="312" y="98"  text-anchor="middle">scored, not asked</text>
+
+      <rect class="svg-box" x="380" y="44" width="112" height="62" rx="4"/>
+      <text class="svg-t-sm" x="436" y="68"  text-anchor="middle">Decide the</text>
+      <text class="svg-t-sm" x="436" y="82"  text-anchor="middle">page shape</text>
+      <text class="svg-lbl"  x="436" y="98"  text-anchor="middle">every layer covered</text>
+
+      <line class="svg-line" x1="120" y1="75" x2="128" y2="75" marker-end="url(#ar5)"/>
+      <line class="svg-line" x1="244" y1="75" x2="252" y2="75" marker-end="url(#ar5)"/>
+      <line class="svg-line" x1="368" y1="75" x2="376" y2="75" marker-end="url(#ar5)"/>
+
+      <text class="svg-hd" x="516" y="20">LANGUAGE MODEL</text>
+      <line class="svg-rule" x1="516" y1="28" x2="640" y2="28"/>
+
+      <rect class="svg-box-a" x="516" y="44" width="124" height="62" rx="4"/>
+      <text class="svg-t"     x="578" y="70"  text-anchor="middle">Write the words</text>
+      <text class="svg-lbl-a" x="578" y="88"  text-anchor="middle">INTO SLOTS CODE</text>
+      <text class="svg-lbl-a" x="578" y="99"  text-anchor="middle">ALREADY CREATED</text>
+
+      <line class="svg-line" x1="492" y1="75" x2="510" y2="75" marker-end="url(#ar5)"/>
+
+      <text class="svg-hd" x="666" y="20">GATE</text>
+      <line class="svg-rule" x1="666" y1="28" x2="852" y2="28"/>
+
+      <rect class="svg-box" x="666" y="44" width="80" height="62" rx="4"/>
+      <text class="svg-t-sm" x="706" y="70"  text-anchor="middle">Validator</text>
+      <text class="svg-lbl"  x="706" y="88"  text-anchor="middle">checks every</text>
+      <text class="svg-lbl"  x="706" y="99"  text-anchor="middle">quoted figure</text>
+
+      <rect class="svg-box" x="772" y="44" width="80" height="62" rx="4"/>
+      <text class="svg-t-sm" x="812" y="79"  text-anchor="middle">Reader</text>
+
+      <line class="svg-line" x1="640" y1="75" x2="660" y2="75" marker-end="url(#ar5)"/>
+      <line class="svg-line" x1="746" y1="75" x2="766" y2="75" marker-end="url(#ar5)"/>
+
+      <!-- reject path -->
+      <polyline class="svg-line-d" points="706,106 706,146 578,146 578,110" marker-end="url(#ar5d)"/>
+      <text class="svg-lbl" x="642" y="162" text-anchor="middle">quotes a figure we cannot back, states a cause the data</text>
+      <text class="svg-lbl" x="642" y="175" text-anchor="middle">doesn't show, or repeats a template — rejected, rewritten</text>
+
+      <line class="svg-rule" x1="8" y1="204" x2="852" y2="204"/>
+      <text class="svg-lbl" x="8" y="224">If the model fails or the draft cannot pass, a grounded fallback written by code ships instead.</text>
+      <text class="svg-lbl" x="8" y="240">The page is never blank, and validation can never dead-end.</text>
+    </svg>
+    <figcaption>The model is the last step, not the first, and it is fenced on both sides. <b>Its output is checked against the same numbers that were handed to it</b> — a figure in the prose that does not appear in the model behind the page is a validation failure, not a rounding quirk.</figcaption>
+  </figure>
+
+  <h3>What the validators actually reject</h3>
+
+  <p>These are real rules, enforced in code on every generated page:</p>
+
+  <ul>
+    <li>A figure quoted in the prose that does not appear in the underlying data model — including one quoted to more decimal places than the page permits.</li>
+    <li>A stated <em>cause</em> that the data only shows as correlation.</li>
+    <li>Calling partial evidence a complete share of total.</li>
+    <li>Naming a business area as included in year-on-year growth when it was excluded from the comparison.</li>
+    <li>Internal vocabulary leaking into a manager-facing page — a technical population term, or a month rendered as "month 1" instead of January.</li>
+    <li>Calling the transaction count "footfall" or "visits". It is bills, not people, and the distinction changes what a manager does next.</li>
+    <li>Running the same sentence template across the page, when the page really is saying the same thing about everything.</li>
+  </ul>
+
+  <p>On the assistant side, the equivalent guard is the numeric grounding check on every answer, plus the schema validator that refuses to run a query naming a column that does not exist.</p>
+
+  <h3>The other thing evaluators ask</h3>
+
+  <p>Determinism. The same inputs must produce the same page — otherwise nothing is testable. So the arithmetic, ranking, banding and layout are all pure functions with no model in the loop, and the build gate re-derives real artifacts from committed inputs and compares them byte for byte. A change that alters a number anywhere fails the build with a field-level diff.</p>
+
+  <div class="sayit">
+    <div class="eyebrow">Say it like this</div>
+    <p>"The AI never does the maths. It gets numbers that are already correct and turns them into English — and then we check the English against the numbers before anyone sees it."</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================================================== 07 -->
+<section id="s7">
+  <div class="sec-head"><span class="num">07</span><h2>Running on Azure</h2></div>
+  <div class="prose">
+
+  <p>Everything runs inside Microsoft Azure. There is no third-party AI service, no external data warehouse and no data leaving the tenant boundary in the course of normal operation.</p>
+
+  <div class="groups">
+    <div class="group">
+      <div class="group__label">Identity</div>
+      <div class="group__body">
+        <p><b>Microsoft Entra ID</b> for user sign-in and for service-to-service authorisation. Separate app registrations for the web application and the API, with a dedicated API scope, so a token minted for one cannot be replayed against the other.</p>
+        <p><b>Managed identities</b> for scheduled automation — no credential is stored anywhere for those jobs to leak.</p>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group__label">Compute</div>
+      <div class="group__body">
+        <p><b>Azure Container Apps</b> hosts the AI API, scaling with demand.</p>
+        <p><b>Container Apps Jobs</b> run the two unattended workloads: the nightly insight generation, one job per customer, and the knowledge-graph builder.</p>
+        <p><b>Azure Virtual Machine with IIS</b> hosts the web application.</p>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group__label">AI</div>
+      <div class="group__body">
+        <p><b>Azure OpenAI</b>, in the customer's region, with three deployments used by tier: a strong reasoning model for query generation and analysis, a fast inexpensive model for classification and routing, and an embedding model for entity resolution. Prompts and completions stay within the Azure OpenAI service.</p>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group__label">Data</div>
+      <div class="group__body">
+        <p><b>Azure Blob Storage</b> — one container per customer, holding published AI content, chat sessions, generated charts, dashboard assets and diagnostic traces.</p>
+        <p><b>Azure Files</b> — the built graph, vector index and entity master, mounted by the API at runtime.</p>
+        <p><b>SQL Server</b> — the application's own configuration: users, reports, modules, dashboards and entitlements. No customer transaction data lives here.</p>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group__label">Analytics</div>
+      <div class="group__body">
+        <p><b>Power BI / Microsoft Fabric capacity</b> — the semantic models the generator reads and the reports the web application embeds. Read and build permission on the dataset is all the agent needs; it never writes to the model.</p>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group__label">Operations</div>
+      <div class="group__body">
+        <p><b>Azure Automation</b> with scheduled runbooks pauses the analytics capacity outside working hours, which is a material line item on the monthly bill.</p>
+        <p><b>Blob lifecycle policies</b> expire diagnostic traces automatically, so retention is enforced by the platform rather than by a job that someone has to remember to run.</p>
+      </div>
+    </div>
+  </div>
+
+  <p>Deployment is per repository and independent: the API and the generator ship as containers; the web application is packaged, transferred over a short-lived signed URL and swapped in by rename, so a release takes the site down for seconds rather than the length of a file copy, and rolling back is a rename in the other direction.</p>
+
+  </div>
+</section>
+
+<!-- ================================================== 08 -->
+<section id="s8">
+  <div class="sec-head"><span class="num">08</span><h2>Data security</h2></div>
+  <div class="prose">
+
+  <p class="lede">Two questions matter to a prospect: can another customer see my data, and can my own staff see more than they should? The answers are enforced in different places, and neither depends on the AI behaving well.</p>
+
+  <h3>One customer, one container</h3>
+
+  <p>Tenant separation is physical, not a column in a shared table. Each customer has their own storage container, their own knowledge graph, their own vector index and their own entity master. There is no code path that resolves a signed-in user to more than one container — a request either resolves to exactly one, or it fails.</p>
+
+  <figure>
+    <svg viewBox="0 0 820 300" role="img" aria-label="Three signed-in users from different customers each pass through a mapping step that resolves their email to exactly one storage container. The containers are separated by a solid boundary. Inside a container, a one-way hash of the user's email selects their private folder.">
+      <defs>
+        <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polygon points="0,1 9,5 0,9" fill="currentColor"/>
+        </marker>
+      </defs>
+
+      <text class="svg-hd" x="8" y="18">SIGNED-IN USER</text>
+      <text class="svg-hd" x="250" y="18">RESOLUTION</text>
+      <text class="svg-hd" x="470" y="18">ISOLATED STORAGE</text>
+
+      <rect class="svg-box" x="8" y="36" width="150" height="44" rx="4"/>
+      <text class="svg-t-sm" x="83" y="55"  text-anchor="middle">User · Customer A</text>
+      <text class="svg-lbl"  x="83" y="70"  text-anchor="middle">Entra ID token</text>
+
+      <rect class="svg-box" x="8" y="104" width="150" height="44" rx="4"/>
+      <text class="svg-t-sm" x="83" y="123" text-anchor="middle">User · Customer B</text>
+      <text class="svg-lbl"  x="83" y="138" text-anchor="middle">Entra ID token</text>
+
+      <rect class="svg-box" x="8" y="172" width="150" height="44" rx="4"/>
+      <text class="svg-t-sm" x="83" y="191" text-anchor="middle">User · Customer C</text>
+      <text class="svg-lbl"  x="83" y="206" text-anchor="middle">Entra ID token</text>
+
+      <rect class="svg-box-a" x="228" y="90" width="152" height="72" rx="4"/>
+      <text class="svg-t"     x="304" y="114" text-anchor="middle">Map email</text>
+      <text class="svg-t"     x="304" y="130" text-anchor="middle">to container</text>
+      <text class="svg-lbl-a" x="304" y="148" text-anchor="middle">EXACTLY ONE, OR FAIL</text>
+
+      <line class="svg-line" x1="158" y1="58"  x2="222" y2="106" marker-end="url(#ar6)"/>
+      <line class="svg-line" x1="158" y1="126" x2="222" y2="126" marker-end="url(#ar6)"/>
+      <line class="svg-line" x1="158" y1="194" x2="222" y2="146" marker-end="url(#ar6)"/>
+
+      <line class="svg-line" x1="380" y1="106" x2="452" y2="58"  marker-end="url(#ar6)"/>
+      <line class="svg-line" x1="380" y1="126" x2="452" y2="126" marker-end="url(#ar6)"/>
+      <line class="svg-line" x1="380" y1="146" x2="452" y2="194" marker-end="url(#ar6)"/>
+
+      <rect class="svg-box" x="458" y="36" width="180" height="44" rx="4"/>
+      <text class="svg-t-sm" x="548" y="55"  text-anchor="middle">Container A</text>
+      <text class="svg-lbl"  x="548" y="70"  text-anchor="middle">own graph · own index</text>
+
+      <rect class="svg-box" x="458" y="104" width="180" height="44" rx="4"/>
+      <text class="svg-t-sm" x="548" y="123" text-anchor="middle">Container B</text>
+      <text class="svg-lbl"  x="548" y="138" text-anchor="middle">own graph · own index</text>
+
+      <rect class="svg-box" x="458" y="172" width="180" height="44" rx="4"/>
+      <text class="svg-t-sm" x="548" y="191" text-anchor="middle">Container C</text>
+      <text class="svg-lbl"  x="548" y="206" text-anchor="middle">own graph · own index</text>
+
+      <line class="svg-rule" x1="648" y1="30" x2="648" y2="226" stroke-dasharray="3 4"/>
+
+      <rect class="svg-box" x="664" y="104" width="148" height="44" rx="4"/>
+      <text class="svg-t-sm" x="738" y="123" text-anchor="middle">users/&lt;hash&gt;/</text>
+      <text class="svg-lbl"  x="738" y="138" text-anchor="middle">private per person</text>
+      <line class="svg-line" x1="638" y1="126" x2="658" y2="126" marker-end="url(#ar6)"/>
+
+      <line class="svg-rule" x1="8" y1="248" x2="812" y2="248"/>
+      <text class="svg-lbl" x="8" y="268">No shared container. No cross-container query. Inside a container, a user's own folder is addressed by a one-way</text>
+      <text class="svg-lbl" x="8" y="283">hash of their email — so a storage path never carries a readable identity, and one user's path cannot be guessed from another's.</text>
+    </svg>
+    <figcaption>Separation is at the storage-account level, so a bug in application code cannot widen it. <b>The mapping step is the only place a container name is ever produced</b>, and it takes the email from a validated token rather than from anything the request body can set.</figcaption>
+  </figure>
+
+  <h3>The gates a request passes</h3>
+
+  <div class="layers">
+    <div class="layer">
+      <div>
+        <h3>Who you are</h3>
+        <p>Sign-in is Microsoft Entra ID against the customer's own directory. ScanB stores no passwords, and the customer's existing MFA and conditional-access policies apply unchanged. Every API call carries a per-user token scoped specifically to this API.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div>
+        <h3>Whose data you reach</h3>
+        <p>The email inside the validated token is mapped to exactly one storage container. Nothing in the request can influence which container is chosen.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div>
+        <h3>Which rows you reach</h3>
+        <p>Before a generated query runs, it is rewritten to include the signed-in user's data-scope keys — recursively, including inside sub-queries, unions and optional matches. Deny by default: a query the enforcer cannot prove it has secured is refused rather than run. Anything that would create, change or delete data is blocked outright; the agent has read access only.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div>
+        <h3>Which reports you reach</h3>
+        <p>Report and module entitlements live in the configuration database and are applied by an administrator. Power BI embed tokens are minted per user, per report, with a limited lifetime.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div>
+        <h3>What can be addressed</h3>
+        <p>Report identifiers must be well-formed GUIDs and dates must be real calendar dates, because both become segments of a storage path — these are path-traversal guards, not input tidiness. A request for a specific past date never silently falls back to today's content, which would show current numbers under an old label.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div>
+        <h3>What is public</h3>
+        <p>In the web application, static files are served before authentication runs. That is a deliberate, documented boundary: customer data is kept out of the public folder entirely, and dashboard assets live outside it and are reachable only through an authenticated route that also checks entitlement.</p>
+      </div>
+    </div>
+    <div class="layer">
+      <div>
+        <h3>Secrets and retention</h3>
+        <p>Credentials live in environment secrets and untracked configuration, never in source control, and are never carried between environments — a deployment refuses to overwrite the target's own configuration. Scheduled automation runs as a managed identity with no stored credential. Diagnostic traces expire automatically after 30 days, and can be captured with all prompt and response text redacted at the point of storage while keeping timings and structure for debugging.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>And it is tested as security, not as features</h3>
+
+  <p>The permission rewriting has its own regression suite, covering the bypass shapes that defeat a naive implementation — unions, nested sub-queries, optional matches, variable-length relationships and missing aliases. Session isolation has its own tests. A separate integrity gate checks the built graph against what the query prompts assume, because the failure that matters most is silent drift: a permission key that stops being written during a rebuild would turn a secured relationship into an unsecured one without any error appearing.</p>
+
+  <p>A second, structure-aware permission engine runs alongside the production one in shadow mode, comparing decisions on live traffic without affecting them <span class="pill pill--dev">In development</span>. A deliberate refusal from it is never overridden.</p>
+
+  <div class="sayit">
+    <div class="eyebrow">Say it like this</div>
+    <p>"Your data sits in your own storage container with your own graph — not a shared table with a customer column. And inside your business, the AI can only ever query the rows that person is already entitled to, because we rewrite the query before it runs rather than filtering results afterwards."</p>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================================================== 09 -->
+<section id="s9">
+  <div class="sec-head"><span class="num">09</span><h2>How we know it works</h2></div>
+  <div class="prose">
+
+  <p>Each repository has its own gate, and all three can be run together from one command before anything ships.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th style="width:24%">System</th><th style="width:30%">Gate</th><th style="width:46%">What it proves</th></tr></thead>
+    <tbody>
+      <tr><td class="t-name">Web App</td><td class="t-note">Compile, plus a manual pass and a post-deploy smoke check</td><td class="t-note">Includes probing that customer sample data is <em>not</em> reachable without signing in.</td></tr>
+      <tr><td class="t-name">AI Bot</td><td class="t-note">Unit suite, seconds, no credentials needed</td><td class="t-note">Permission rewriting, session isolation, entity guards, routing and answer grounding.</td></tr>
+      <tr><td class="t-name">AI Bot</td><td class="t-note">Integration suite</td><td class="t-note">API authentication, entity-resolution quality, and graph integrity against what the prompts assume.</td></tr>
+      <tr><td class="t-name">Auto-Insight</td><td class="t-note">Offline replay gate, then a byte-comparison</td><td class="t-note">Re-derives real artifacts from committed inputs through the production code path. Any change to a number, band or layout fails with a field-level diff.</td></tr>
+      <tr><td class="t-name">Auto-Insight</td><td class="t-note">Artifact audit, after every live run</td><td class="t-note">Re-checks a <em>delivered</em> page: that the decomposition sums, the waterfall closes, every percentage matches its own values, and every claim in the prose is grounded.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Answer quality is measured, not assumed</h3>
+
+  <p>The assistant has a benchmark of 105 real retail questions spanning inventory, procurement, sales, pricing, operations and executive-level asks. The harness runs the actual pipeline — no mocks — and records the final answer, the query that produced it, the rows that came back, the entities it resolved, retries and latency for every question. Scoring combines deterministic checks with an optional model-graded rubric. That is how a change to prompts or resolution is shown to be an improvement rather than assumed to be one.</p>
+
+  <h3>Onboarding a new customer</h3>
+
+  <p>There is an internal console for bringing on a new customer: configure them, probe their semantic model without running any AI or writing anything, review what the probe found, then deploy their nightly job. The probe step matters — it is where a model's shape problems surface cheaply, before a full run. Where a customer's model is missing something a feature needs, that becomes a recorded configuration decision rather than a code change.</p>
+
+  </div>
+</section>
+
+<!-- ================================================== 10 -->
+<section id="s10">
+  <div class="sec-head"><span class="num">10</span><h2>In development</h2></div>
+  <div class="prose">
+
+  <p>Present in the product and worth talking about, but not yet doing the full job end to end. Describe these as coming, not as shipped.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th style="width:28%">Feature</th><th style="width:48%">Where it stands</th><th style="width:24%">What to say</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="t-name">Ask Team</td>
+        <td class="t-note">Every insight card offers two routes out: ask the AI, or hand it to a colleague. The first is live. The second is visible in the drawer and tells the user it is coming; assignment, ownership and notification are being built.</td>
+        <td class="t-note">"Insights will be assignable — you'll be able to hand a finding to whoever owns that area."</td>
+      </tr>
+      <tr>
+        <td class="t-name">Multi-step reasoning</td>
+        <td class="t-note">A full planning path — decompose the question, run the steps, check whether the plan actually answered it, revise, then synthesise — is built and unit-tested behind a switch, with a sandboxed calculation tool and a deterministic business-rule lookup alongside it. It is being validated for answer quality against the benchmark before it is switched on.</td>
+        <td class="t-note">"Deeper 'why' questions are next — the assistant plans several queries and checks its own work."</td>
+      </tr>
+      <tr>
+        <td class="t-name">Structure-aware permission engine</td>
+        <td class="t-note">A second enforcer that parses query structure rather than matching patterns. It runs in shadow mode against live traffic today — the proven engine stays authoritative and its decisions are the ones applied — while divergences are logged for review.</td>
+        <td class="t-note">Internal detail. Mention only if a vendor asks how the enforcement is verified.</td>
+      </tr>
+      <tr>
+        <td class="t-name">Sales domain packs</td>
+        <td class="t-note">The generator is being generalised into domain verticals over one shared core. The inventory packs — stock ageing, inventory management and the chain between them — are complete. The sales additions are the current work.</td>
+        <td class="t-note">"Inventory analysis ships today; more sales-side report types are being added on the same engine."</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  </div>
+</section>
+
+<!-- ================================================== glossary -->
+<section id="gloss">
+  <div class="sec-head"><span class="num">—</span><h2>Glossary</h2></div>
+  <div class="prose">
+
+  <p>For when a prospect asks what a word on this page means.</p>
+
+  <dl class="gloss">
+    <div><dt>Semantic model</dt><dd>The Power BI layer that turns raw tables into business measures — "revenue", "units", "bills" — with the relationships between them. The generator reads this, not the raw database.</dd></div>
+    <div><dt>DAX</dt><dd>The query language for a Power BI semantic model. The agent writes it; no one on the customer's side ever does.</dd></div>
+    <div><dt>Knowledge graph</dt><dd>A database that stores things and the links between them rather than rows in tables. Fast at "which suppliers serve stores that are underperforming", which is most retail questions.</dd></div>
+    <div><dt>Cypher</dt><dd>The query language for that graph — the assistant's equivalent of DAX.</dd></div>
+    <div><dt>Vector index</dt><dd>A search index over meaning rather than spelling. It is how "fresh chicken" finds the category the data actually calls something else.</dd></div>
+    <div><dt>LangGraph</dt><dd>The framework both agents are built on. It makes an agent an explicit graph of stages with defined transitions, rather than a loop that decides what to do next each time — which is what makes the behaviour testable.</dd></div>
+    <div><dt>Row-level security</dt><dd>Restricting which records a person can see. Here it is applied by rewriting the query before it runs, not by filtering results after.</dd></div>
+    <div><dt>Embed token</dt><dd>A short-lived credential that lets one specific user view one specific Power BI report inside ScanB.</dd></div>
+    <div><dt>RAG band</dt><dd>Red / amber / green. In the briefing, applied per measure against the standard that measure is held to — a decline in units is judged more harshly than a decline in revenue, because it means real demand fell.</dd></div>
+    <div><dt>Three-lever split</dt><dd>Revenue = transactions × basket size × price. Separating the three tells a manager whether they had fewer trips, smaller baskets or lower prices — which have opposite responses.</dd></div>
+  </dl>
+
+  </div>
+</section>
+
+<div class="colophon">
+  <p><strong>Using this document.</strong> It is written to be read end to end by someone on the team, and quoted from in pieces. The <em>Say it like this</em> lines are the one-sentence versions for a live conversation. Customer names and infrastructure identifiers are deliberately absent — if a conversation needs them, share them directly rather than sending this page.</p>
+</div>
+
+</main>
+</div>

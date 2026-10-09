@@ -1,0 +1,10 @@
+# Personal Claude Code settings stay on each machine
+.claude/settings.local.json
+
+# Secrets never live in this repo
+.env
+.env.*
+
+# Scratch
+*.log
+*.tmp

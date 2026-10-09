@@ -1,0 +1,1393 @@
+<title>ScanB Architecture Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:   #0b1211;
+  --panel:    #131d1b;
+  --panel-2:  #1a2523;
+  --ink:      #e9f0ed;
+  --ink-2:    #b4c4c0;
+  --muted:    #7d918d;
+  --line:     #26332f;
+  --line-2:   #33443f;
+  --teal:     #3ecfb2;
+  --teal-dim: #1d6f61;
+  --teal-ink: #0b1211;
+  --amber:    #e2a75f;
+  --amber-dim:#3a2c19;
+
+  --f-disp: "IBM Plex Sans Condensed", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-body);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ---------------------------------------------------------- stage */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--ground);
+}
+
+.slide {
+  position: absolute;
+  width: 1280px;
+  height: 720px;
+  padding: 54px 72px 56px;
+  background: var(--ground);
+  transform: scale(var(--s, 1));
+  transform-origin: center center;
+  display: none;
+  grid-template-rows: auto auto 1fr;
+  gap: 0;
+}
+
+.slide.is-active { display: grid; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .slide.is-active { animation: rise 220ms ease-out both; }
+  @keyframes rise {
+    from { opacity: 0; transform: scale(var(--s,1)) translateY(6px); }
+    to   { opacity: 1; transform: scale(var(--s,1)) translateY(0); }
+  }
+}
+
+/* ---------------------------------------------------------- slide chrome */
+
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-top: 1px solid var(--line-2);
+  padding-top: 12px;
+  margin-bottom: 42px;
+}
+
+.top .sec {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.top .num {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+h2.title {
+  font-family: var(--f-disp);
+  font-weight: 700;
+  font-size: 54px;
+  line-height: 1.03;
+  letter-spacing: -0.008em;
+  margin: 0 0 10px;
+  max-width: 22ch;
+}
+
+.kicker {
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 82ch;
+  margin: 0 0 30px;
+}
+
+.body { min-height: 0; }
+
+/* ---------------------------------------------------------- title slide */
+
+.slide--title { grid-template-rows: 1fr auto; padding: 72px; }
+
+.slide--title .mark {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 30px;
+}
+
+.slide--title h1 {
+  font-family: var(--f-disp);
+  font-weight: 700;
+  font-size: 108px;
+  line-height: 0.95;
+  letter-spacing: -0.018em;
+  margin: 0 0 26px;
+  max-width: 17ch;
+}
+
+.slide--title h1 em { font-style: normal; color: var(--teal); }
+
+.slide--title .sub {
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+.slide--title .foot {
+  display: flex;
+  gap: 46px;
+  border-top: 1px solid var(--line-2);
+  padding-top: 18px;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.slide--title .foot b { color: var(--ink-2); font-weight: 400; }
+
+/* ---------------------------------------------------------- divider slide */
+
+.slide--divider { grid-template-rows: auto 1fr; }
+
+.slide--divider .big {
+  align-self: center;
+}
+
+.slide--divider .idx {
+  font-family: var(--f-mono);
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: var(--teal);
+  margin-bottom: 22px;
+}
+
+.slide--divider h2 {
+  font-family: var(--f-disp);
+  font-weight: 700;
+  font-size: 86px;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  margin: 0 0 22px;
+  max-width: 18ch;
+}
+
+.slide--divider p {
+  font-size: 21px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 60ch;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------- figures */
+
+figure { margin: 0; }
+
+figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 460px;
+}
+
+.fig-note {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 16px;
+  max-width: 100ch;
+}
+
+.fig-note b { color: var(--ink-2); font-weight: 500; }
+
+.s-box   { fill: var(--panel-2); stroke: var(--line-2); stroke-width: 1.4; }
+.s-box-a { fill: #16332e; stroke: var(--teal); stroke-width: 1.8; }
+.s-box-w { fill: var(--amber-dim); stroke: var(--amber); stroke-width: 1.5; }
+.s-t     { font-family: var(--f-body); font-size: 17px; font-weight: 600; fill: var(--ink); }
+.s-t2    { font-family: var(--f-body); font-size: 14.5px; font-weight: 400; fill: var(--ink-2); }
+.s-l     { font-family: var(--f-mono); font-size: 12.5px; fill: var(--muted); letter-spacing: 0.02em; }
+.s-la    { font-family: var(--f-mono); font-size: 12.5px; fill: var(--teal); letter-spacing: 0.02em; }
+.s-hd    { font-family: var(--f-mono); font-size: 13px; fill: var(--teal); letter-spacing: 0.14em; }
+.s-line  { stroke: var(--line-2); stroke-width: 2; fill: none; }
+.s-line-a{ stroke: var(--teal); stroke-width: 2.2; fill: none; }
+.s-line-w{ stroke: var(--amber); stroke-width: 2; fill: none; stroke-dasharray: 6 4; }
+.s-dash  { stroke: var(--muted); stroke-width: 1.8; fill: none; stroke-dasharray: 7 5; }
+.s-rule  { stroke: var(--line-2); stroke-width: 1.2; }
+
+/* ---------------------------------------------------------- columns */
+
+.cols {
+  display: grid;
+  gap: 34px;
+  align-content: start;
+}
+.cols--2 { grid-template-columns: 1fr 1fr; }
+.cols--3 { grid-template-columns: repeat(3, 1fr); }
+.cols--4 { grid-template-columns: repeat(4, 1fr); }
+
+.col h3 {
+  font-family: var(--f-disp);
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1.12;
+  margin: 0 0 10px;
+  letter-spacing: -0.004em;
+}
+
+.col p { font-size: 16.5px; line-height: 1.5; color: var(--ink-2); margin: 0 0 9px; }
+.col p:last-child { margin-bottom: 0; }
+
+.col .tag {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--teal);
+  display: block;
+  margin-bottom: 9px;
+}
+
+.col--ruled { border-top: 2px solid var(--teal-dim); padding-top: 16px; }
+
+/* ---------------------------------------------------------- lists */
+
+ul.pts { list-style: none; margin: 0; padding: 0; display: grid; gap: 17px; }
+
+ul.pts li {
+  display: grid;
+  grid-template-columns: 15px 1fr;
+  gap: 15px;
+  font-size: 18.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+ul.pts li::before {
+  content: "";
+  width: 9px; height: 9px;
+  margin-top: 9px;
+  background: var(--teal);
+  transform: rotate(45deg);
+}
+
+ul.pts li b { color: var(--ink); font-weight: 600; }
+
+ul.pts--tight li { font-size: 17px; }
+
+/* ---------------------------------------------------------- stat row */
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+
+.stat {
+  border-left: 1px solid var(--line-2);
+  padding: 4px 26px 4px 24px;
+}
+.stat:first-child { border-left: 0; padding-left: 0; }
+
+.stat .v {
+  font-family: var(--f-disp);
+  font-weight: 700;
+  font-size: 52px;
+  line-height: 1;
+  color: var(--teal);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat .k {
+  font-size: 15.5px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  margin-top: 11px;
+}
+
+/* ---------------------------------------------------------- table */
+
+table { width: 100%; border-collapse: collapse; font-size: 16.5px; }
+
+th {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+  text-align: left;
+  padding: 0 20px 11px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+
+td {
+  padding: 14px 20px 14px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-2);
+  vertical-align: top;
+  line-height: 1.42;
+}
+
+td:last-child, th:last-child { padding-right: 0; }
+td.k { color: var(--ink); font-weight: 600; }
+
+/* ---------------------------------------------------------- pills */
+
+.pill {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.pill--live { color: var(--teal); }
+.pill--dev  { color: var(--amber); }
+
+/* ---------------------------------------------------------- quote block */
+
+.claim {
+  border-left: 3px solid var(--teal);
+  padding: 6px 0 6px 28px;
+  max-width: 74ch;
+}
+
+.claim p {
+  font-family: var(--f-disp);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.22;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+
+.claim .who {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+/* ---------------------------------------------------------- agenda */
+
+.agenda { display: grid; grid-template-columns: 1fr 1fr; gap: 0 60px; }
+
+.agenda a {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 16px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  color: var(--ink);
+  align-items: baseline;
+}
+
+.agenda a:hover .nm { color: var(--teal); }
+.agenda a:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+
+.agenda .ix {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  color: var(--teal);
+}
+
+.agenda .nm {
+  font-family: var(--f-disp);
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1.15;
+}
+
+.agenda .ds { font-size: 14.5px; color: var(--muted); margin-top: 3px; line-height: 1.35; }
+
+/* ---------------------------------------------------------- hud */
+
+.hud {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hud .bar {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  position: relative;
+}
+
+.hud .bar i {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--teal);
+  width: 0%;
+  transition: width 200ms ease-out;
+}
+
+.hud .count {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.nav {
+  pointer-events: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.nav button {
+  width: 30px; height: 26px;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--ink-2);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.nav button:hover { border-color: var(--teal); color: var(--teal); }
+.nav button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+.hint {
+  position: fixed;
+  right: 20px; top: 16px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--line-2);
+  z-index: 20;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------- print */
+
+@media print {
+  body { overflow: visible; height: auto; background: #fff; }
+  .stage { position: static; display: block; }
+  .hud, .hint { display: none; }
+  .slide {
+    display: grid !important;
+    position: static;
+    transform: none;
+    width: 100%;
+    height: 100vh;
+    page-break-after: always;
+    background: var(--ground);
+  }
+}
+</style>
+
+<div class="stage" id="stage">
+
+<!-- ============================================ 1 · TITLE -->
+<section class="slide slide--title is-active">
+  <div>
+    <div class="mark">Platform Architecture Review</div>
+    <h1>ScanB, and the <em>agents</em> inside it</h1>
+    <p class="sub">How the platform is put together — and how two very different AI agents turn a retailer's Power BI model into answers on demand and analysis nobody had to ask for.</p>
+  </div>
+  <div class="foot">
+    <span>THREE CODEBASES · <b>ONE PRODUCT</b></span>
+    <span>AUDIENCE · <b>SEMI-TECHNICAL</b></span>
+    <span>CUSTOMER NAMES · <b>EXCLUDED</b></span>
+  </div>
+</section>
+
+<!-- ============================================ 2 · AGENDA -->
+<section class="slide">
+  <div class="top"><span class="sec">Contents</span><span class="num">02</span></div>
+  <h2 class="title">What we'll walk through</h2>
+  <div class="body">
+    <div class="agenda">
+      <a href="#s4"><span class="ix">01</span><span><span class="nm">The platform</span><span class="ds">Three systems, one product, and how data moves between them</span></span></a>
+      <a href="#s9"><span class="ix">03</span><span><span class="nm">The generator</span><span class="ds">Writes its own queries, decides what's worth saying</span></span></a>
+      <a href="#s6"><span class="ix">02</span><span><span class="nm">The assistant</span><span class="ds">Question to grounded answer, in ten stages</span></span></a>
+      <a href="#s14"><span class="ix">04</span><span><span class="nm">Why you can trust it</span><span class="ds">The line between what code does and what the model does</span></span></a>
+      <a href="#s16"><span class="ix">05</span><span><span class="nm">Security &amp; Azure</span><span class="ds">Tenant isolation, row-level access, what it runs on</span></span></a>
+      <a href="#s19"><span class="ix">06</span><span><span class="nm">What's next</span><span class="ds">Shipping now versus in development</span></span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 3 · WHAT IT IS -->
+<section class="slide">
+  <div class="top"><span class="sec">01 · The platform</span><span class="num">03</span></div>
+  <h2 class="title">ScanB in one sentence</h2>
+  <p class="kicker">A retailer's data already lives in Power BI. ScanB puts a product around it that <b>answers questions</b> — and one that <b>raises them</b>.</p>
+  <div class="body">
+    <div class="cols cols--3">
+      <div class="col col--ruled">
+        <span class="tag">What they already know</span>
+        <h3>Reports &amp; dashboards</h3>
+        <p>Their own Power BI reports, embedded, behind their own sign-in and their own access rules. Nothing to migrate.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Nobody asked for it</span>
+        <h3>Analysis, every morning</h3>
+        <p>Written overnight: what moved, by how much, and why it probably moved. Ranked so the trivial doesn't lead.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Just ask</span>
+        <h3>A retail assistant</h3>
+        <p>"Which branches are below target this week?" — plain English, answered from that user's own permitted data.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 4 · SYSTEM MAP -->
+<section class="slide" id="s4">
+  <div class="top"><span class="sec">01 · The platform</span><span class="num">04</span></div>
+  <h2 class="title">Three systems, one product</h2>
+  <div class="body">
+    <figure>
+      <svg viewBox="0 0 1120 424" role="img" aria-label="The Power BI semantic model feeds Auto-Insight, which writes files into per-customer blob storage. The AI Bot reads AI content from storage and serves the Web App, which also reads dashboard files directly and asks the AI Bot live questions.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#33443f"/>
+          </marker>
+          <marker id="a1t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#3ecfb2"/>
+          </marker>
+        </defs>
+
+        <rect class="s-box" x="10" y="150" width="152" height="82" rx="3"/>
+        <text class="s-t"  x="86" y="184" text-anchor="middle">Power BI</text>
+        <text class="s-t2" x="86" y="206" text-anchor="middle">semantic model</text>
+
+        <rect class="s-box" x="212" y="150" width="182" height="82" rx="3"/>
+        <text class="s-l"  x="303" y="140" text-anchor="middle">SYSTEM 3</text>
+        <text class="s-t"  x="303" y="184" text-anchor="middle">Auto-Insight</text>
+        <text class="s-t2" x="303" y="206" text-anchor="middle">the generator</text>
+
+        <rect class="s-box" x="444" y="66" width="208" height="250" rx="3"/>
+        <text class="s-la" x="548" y="56" text-anchor="middle">ONE CONTAINER PER CUSTOMER</text>
+        <text class="s-t"  x="548" y="98" text-anchor="middle">Blob storage</text>
+        <rect class="s-box" x="464" y="120" width="168" height="62" rx="3"/>
+        <text class="s-t2" x="548" y="146" text-anchor="middle">ai-content/</text>
+        <text class="s-l"  x="548" y="166" text-anchor="middle">summaries · KPIs</text>
+        <rect class="s-box" x="464" y="212" width="168" height="62" rx="3"/>
+        <text class="s-t2" x="548" y="238" text-anchor="middle">html-dashboards/</text>
+        <text class="s-l"  x="548" y="258" text-anchor="middle">built pages</text>
+
+        <rect class="s-box" x="702" y="88" width="182" height="82" rx="3"/>
+        <text class="s-l"  x="793" y="78" text-anchor="middle">SYSTEM 2</text>
+        <text class="s-t"  x="793" y="122" text-anchor="middle">AI Bot</text>
+        <text class="s-t2" x="793" y="144" text-anchor="middle">the answer engine</text>
+
+        <rect class="s-box-a" x="934" y="150" width="176" height="90" rx="3"/>
+        <text class="s-la" x="1022" y="140" text-anchor="middle">SYSTEM 1</text>
+        <text class="s-t"  x="1022" y="186" text-anchor="middle">Web App</text>
+        <text class="s-t2" x="1022" y="208" text-anchor="middle">what the customer</text>
+        <text class="s-t2" x="1022" y="226" text-anchor="middle">actually sees</text>
+
+        <rect class="s-box" x="934" y="304" width="176" height="58" rx="3"/>
+        <text class="s-t" x="1022" y="339" text-anchor="middle">Retail team</text>
+
+        <line class="s-line" x1="162" y1="191" x2="206" y2="191" marker-end="url(#a1)"/>
+        <text class="s-l" x="184" y="178" text-anchor="middle">reads</text>
+
+        <line class="s-line" x1="394" y1="191" x2="438" y2="191" marker-end="url(#a1)"/>
+        <text class="s-l" x="416" y="178" text-anchor="middle">writes</text>
+
+        <line class="s-line" x1="632" y1="150" x2="696" y2="130" marker-end="url(#a1)"/>
+        <text class="s-l" x="664" y="130" text-anchor="middle">reads</text>
+
+        <line class="s-line" x1="884" y1="130" x2="928" y2="168" marker-end="url(#a1)"/>
+        <text class="s-l" x="918" y="128" text-anchor="middle">serves</text>
+
+        <polyline class="s-line" points="632,244 790,244 790,222 928,222" marker-end="url(#a1)"/>
+        <text class="s-l" x="726" y="234" text-anchor="middle">reads directly</text>
+
+        <polyline class="s-line-a" points="984,150 984,26 793,26 793,84" marker-end="url(#a1t)"/>
+        <text class="s-la" x="888" y="18" text-anchor="middle">live questions · signed-in user's token</text>
+
+        <line class="s-line" x1="1022" y1="240" x2="1022" y2="300" marker-end="url(#a1)"/>
+      </svg>
+      <p class="fig-note"><b>The generator and the Web App never call each other.</b> Everything between them travels through storage — which is what lets all three be built, tested and released on their own schedules.</p>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================ 5 · THE STACK -->
+<section class="slide">
+  <div class="top"><span class="sec">01 · The platform</span><span class="num">05</span></div>
+  <h2 class="title">What each one is built with</h2>
+  <div class="body">
+    <table>
+      <thead><tr><th style="width:20%">System</th><th style="width:30%">Owns</th><th style="width:50%">Stack</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="k">Web App</td>
+          <td>Sign-in, entitlements, report catalogue, dashboards, KPI hub, the assistant's interface</td>
+          <td>ASP.NET Core 8 MVC · Entity Framework Core · SQL Server · Microsoft Entra ID · Power BI Embedded</td>
+        </tr>
+        <tr>
+          <td class="k">AI Bot</td>
+          <td>Natural-language questions, row-level access enforcement, serving stored AI content</td>
+          <td>Python · FastAPI · LangGraph · Kuzu graph DB · FAISS vector index · DuckDB · Azure OpenAI</td>
+        </tr>
+        <tr>
+          <td class="k">Auto-Insight</td>
+          <td>Daily KPI insights and per-report analysis, published to storage</td>
+          <td>Python · LangGraph · Power BI REST API · auto-generated DAX · Azure Container Apps Jobs</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="fig-note" style="margin-top:28px">Independent repositories with independent release cycles. They integrate over <b>HTTPS and blob storage only</b> — no shared source, no shared database, no build-order dependency.</p>
+  </div>
+</section>
+
+<!-- ============================================ 6 · DIVIDER: AI -->
+<section class="slide slide--divider" id="s6">
+  <div class="top"><span class="sec">02 · ScanB AI</span><span class="num">06</span></div>
+  <div class="big">
+    <div class="idx">SECTION TWO</div>
+    <h2>Two agents, pointed in opposite directions</h2>
+    <p>Most of what makes ScanB different is here. One agent waits to be asked. The other decides for itself what is worth saying — which is the harder problem.</p>
+  </div>
+</section>
+
+<!-- ============================================ 7 · ASK VS TELL -->
+<section class="slide">
+  <div class="top"><span class="sec">02 · ScanB AI</span><span class="num">07</span></div>
+  <h2 class="title">Reactive and proactive</h2>
+  <div class="body">
+    <figure>
+      <svg viewBox="0 0 1120 356" role="img" aria-label="Two lanes. The top lane, Ask, is reactive: a manager asks a question and the AI Bot returns an answer in seconds. The bottom lane, Tell, is proactive: a nightly schedule drives Auto-Insight to produce a briefing waiting by morning.">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#33443f"/>
+          </marker>
+        </defs>
+
+        <text class="s-hd" x="8" y="22">ASK · REACTIVE</text>
+        <line class="s-rule" x1="8" y1="34" x2="1112" y2="34"/>
+
+        <rect class="s-box" x="8" y="58" width="196" height="76" rx="3"/>
+        <text class="s-t"  x="106" y="90"  text-anchor="middle">A manager</text>
+        <text class="s-t2" x="106" y="112" text-anchor="middle">asks a question</text>
+
+        <rect class="s-box-a" x="348" y="58" width="256" height="76" rx="3"/>
+        <text class="s-t"  x="476" y="90"  text-anchor="middle">AI Bot</text>
+        <text class="s-t2" x="476" y="112" text-anchor="middle">plans · queries · verifies</text>
+
+        <rect class="s-box" x="748" y="58" width="256" height="76" rx="3"/>
+        <text class="s-t"  x="876" y="90"  text-anchor="middle">Answer, chart, table</text>
+        <text class="s-t2" x="876" y="112" text-anchor="middle">in seconds</text>
+
+        <line class="s-line" x1="204" y1="96" x2="342" y2="96" marker-end="url(#a2)"/>
+        <text class="s-l" x="273" y="84" text-anchor="middle">one question</text>
+        <line class="s-line" x1="604" y1="96" x2="742" y2="96" marker-end="url(#a2)"/>
+        <text class="s-l" x="673" y="84" text-anchor="middle">grounded reply</text>
+        <text class="s-l" x="1020" y="92">the user set</text>
+        <text class="s-l" x="1020" y="110">the agenda</text>
+
+        <text class="s-hd" x="8" y="214">TELL · PROACTIVE</text>
+        <line class="s-rule" x1="8" y1="226" x2="1112" y2="226"/>
+
+        <rect class="s-box" x="8" y="250" width="196" height="76" rx="3"/>
+        <text class="s-t"  x="106" y="282" text-anchor="middle">A schedule</text>
+        <text class="s-t2" x="106" y="304" text-anchor="middle">nobody asked</text>
+
+        <rect class="s-box-a" x="348" y="250" width="256" height="76" rx="3"/>
+        <text class="s-t"  x="476" y="282" text-anchor="middle">Auto-Insight</text>
+        <text class="s-t2" x="476" y="304" text-anchor="middle">scans · ranks · explains</text>
+
+        <rect class="s-box" x="748" y="250" width="256" height="76" rx="3"/>
+        <text class="s-t"  x="876" y="282" text-anchor="middle">A briefing, waiting</text>
+        <text class="s-t2" x="876" y="304" text-anchor="middle">by morning</text>
+
+        <line class="s-line" x1="204" y1="288" x2="342" y2="288" marker-end="url(#a2)"/>
+        <text class="s-l" x="273" y="276" text-anchor="middle">every night</text>
+        <line class="s-line" x1="604" y1="288" x2="742" y2="288" marker-end="url(#a2)"/>
+        <text class="s-l" x="673" y="276" text-anchor="middle">published</text>
+        <text class="s-l" x="1020" y="284">the agent set</text>
+        <text class="s-l" x="1020" y="302">the agenda</text>
+      </svg>
+      <p class="fig-note">Same underlying technology, opposite directions. <b>Deciding what to say when nobody has told you what to look for</b> — and not repeating yourself tomorrow — is the harder half.</p>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================ 8 · PIPELINE -->
+<section class="slide">
+  <div class="top"><span class="sec">02 · The assistant</span><span class="num">08</span></div>
+  <h2 class="title">A question becomes an answer in ten stages</h2>
+  <div class="body">
+    <figure>
+      <svg viewBox="0 0 1120 470" role="img" aria-label="A ten-stage pipeline. The first row checks the token, resolves the question, identifies entities and chooses an approach. The second row writes a graph query, validates it with a retry loop, applies the user's row-level permissions, runs it against the knowledge graph and verifies the answer. A query that cannot be secured is refused.">
+        <defs>
+          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#33443f"/>
+          </marker>
+          <marker id="a3w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#e2a75f"/>
+          </marker>
+          <marker id="a3m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#7d918d"/>
+          </marker>
+        </defs>
+
+        <text class="s-hd" x="20" y="16">UNDERSTAND THE QUESTION</text>
+
+        <rect class="s-box" x="20" y="32" width="245" height="76" rx="3"/>
+        <text class="s-t"  x="142" y="64" text-anchor="middle">Check the token</text>
+        <text class="s-t2" x="142" y="86" text-anchor="middle">who is asking</text>
+
+        <rect class="s-box" x="295" y="32" width="245" height="76" rx="3"/>
+        <text class="s-t"  x="417" y="64" text-anchor="middle">Resolve the question</text>
+        <text class="s-t2" x="417" y="86" text-anchor="middle">"and for ST1?" → full question</text>
+
+        <rect class="s-box" x="570" y="32" width="245" height="76" rx="3"/>
+        <text class="s-t"  x="692" y="64" text-anchor="middle">Identify what they meant</text>
+        <text class="s-t2" x="692" y="86" text-anchor="middle">stores · SKUs · brands</text>
+
+        <rect class="s-box" x="845" y="32" width="245" height="76" rx="3"/>
+        <text class="s-t"  x="967" y="64" text-anchor="middle">Choose the approach</text>
+        <text class="s-t2" x="967" y="86" text-anchor="middle">lookup, diagnosis or plan</text>
+
+        <line class="s-line" x1="265" y1="70" x2="289" y2="70" marker-end="url(#a3)"/>
+        <line class="s-line" x1="540" y1="70" x2="564" y2="70" marker-end="url(#a3)"/>
+        <line class="s-line" x1="815" y1="70" x2="839" y2="70" marker-end="url(#a3)"/>
+
+        <polyline class="s-line" points="1090,70 1105,70 1105,168 118,168 118,246" marker-end="url(#a3)"/>
+
+        <text class="s-hd" x="20" y="228">ANSWER IT SAFELY</text>
+
+        <rect class="s-box" x="20" y="250" width="196" height="80" rx="3"/>
+        <text class="s-t"  x="118" y="284" text-anchor="middle">Write the query</text>
+        <text class="s-t2" x="118" y="306" text-anchor="middle">the model writes Cypher</text>
+
+        <rect class="s-box" x="238" y="250" width="196" height="80" rx="3"/>
+        <text class="s-t"  x="336" y="284" text-anchor="middle">Validate it</text>
+        <text class="s-t2" x="336" y="306" text-anchor="middle">against the real schema</text>
+
+        <rect class="s-box-a" x="456" y="250" width="196" height="80" rx="3"/>
+        <text class="s-t"  x="554" y="278" text-anchor="middle">Apply that user's</text>
+        <text class="s-t"  x="554" y="298" text-anchor="middle">row permissions</text>
+        <text class="s-la" x="554" y="318" text-anchor="middle">REWRITTEN, NOT FILTERED AFTER</text>
+
+        <rect class="s-box" x="674" y="250" width="196" height="80" rx="3"/>
+        <text class="s-t"  x="772" y="284" text-anchor="middle">Run it</text>
+        <text class="s-t2" x="772" y="306" text-anchor="middle">on the knowledge graph</text>
+
+        <rect class="s-box" x="892" y="250" width="196" height="80" rx="3"/>
+        <text class="s-t"  x="990" y="284" text-anchor="middle">Check the answer</text>
+        <text class="s-t2" x="990" y="306" text-anchor="middle">figures vs the rows</text>
+
+        <line class="s-line" x1="216" y1="290" x2="232" y2="290" marker-end="url(#a3)"/>
+        <line class="s-line" x1="434" y1="290" x2="450" y2="290" marker-end="url(#a3)"/>
+        <line class="s-line" x1="652" y1="290" x2="668" y2="290" marker-end="url(#a3)"/>
+        <line class="s-line" x1="870" y1="290" x2="886" y2="290" marker-end="url(#a3)"/>
+
+        <polyline class="s-dash" points="336,330 336,368 118,368 118,334" marker-end="url(#a3m)"/>
+        <text class="s-l" x="227" y="386" text-anchor="middle">schema mismatch — rewrite, up to 3 times</text>
+
+        <polyline class="s-line-w" points="554,330 554,404" marker-end="url(#a3w)"/>
+        <rect class="s-box-w" x="418" y="404" width="272" height="52" rx="3"/>
+        <text class="s-t" x="554" y="426" text-anchor="middle">Cannot be secured → refused</text>
+        <text class="s-l" x="554" y="446" text-anchor="middle">never run without the restriction</text>
+
+        <rect class="s-box" x="892" y="404" width="196" height="52" rx="3"/>
+        <text class="s-t" x="990" y="426" text-anchor="middle">Reply</text>
+        <text class="s-l" x="990" y="446" text-anchor="middle">text · chart · table</text>
+        <line class="s-line" x1="990" y1="330" x2="990" y2="400" marker-end="url(#a3)"/>
+      </svg>
+      <p class="fig-note">Only two stages use a language model to write anything. <b>Validation, permissions and verification are ordinary code</b> — deterministic, unit-tested, and unable to be talked out of a decision by a cleverly worded question.</p>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================ 9 · THREE STORES -->
+<section class="slide">
+  <div class="top"><span class="sec">02 · The assistant</span><span class="num">09</span></div>
+  <h2 class="title">Why a graph, and not just SQL</h2>
+  <p class="kicker">Retail questions are questions about <b>relationships</b>: this SKU, in that store, in this brand, over that period, against its peers. Cheap on a graph, expensive on wide tables.</p>
+  <div class="body">
+    <div class="cols cols--3">
+      <div class="col col--ruled">
+        <span class="tag">Kuzu · the facts</span>
+        <h3>Knowledge graph</h3>
+        <p>Stores, products, brands, categories, suppliers — and the sales and stock relationships between them. This is what the generated query actually runs against.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">FAISS · the meaning</span>
+        <h3>Vector index</h3>
+        <p>Maps what a person typed to what the data calls it. "Fresh chicken", "FRESH CHICKEN &amp; PARTS" and a SKU code all have to land on the same thing.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">DuckDB · the names</span>
+        <h3>Entity master</h3>
+        <p>Every real name and alias, for exact lookup. Tried first, because it is both faster and more certain than a similarity search.</p>
+      </div>
+    </div>
+    <p class="fig-note" style="margin-top:34px">Resolution runs in that order — <b>exact, then alias, then meaning</b>. If it still can't tell which of two things you meant, it asks. It does not guess and it does not silently pick one.</p>
+  </div>
+</section>
+
+<!-- ============================================ 10 · GUARDS -->
+<section class="slide">
+  <div class="top"><span class="sec">02 · The assistant</span><span class="num">10</span></div>
+  <h2 class="title">Three stages exist only to stop a confident wrong answer</h2>
+  <div class="body">
+    <div class="cols cols--3">
+      <div class="col col--ruled">
+        <span class="tag">Before it runs</span>
+        <h3>The validator</h3>
+        <p>Reads the generated query and checks every table and column it names against the graph's real schema. A query referencing something that doesn't exist goes back to be rewritten — with the error text attached — up to three times.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Before it runs</span>
+        <h3>The enforcer</h3>
+        <p>Rewrites the query to include that user's data-scope keys — recursively, including inside sub-queries, unions and optional matches, which is exactly where a naive implementation leaks. Anything that would write, change or delete is blocked outright.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">After it runs</span>
+        <h3>The verifier</h3>
+        <p>Compares every figure in the written answer against the rows that came back. "Zero because the data says zero" is reported differently from "zero because your permissions excluded it".</p>
+      </div>
+    </div>
+    <p class="fig-note" style="margin-top:34px">Every question also leaves a full trace — each stage, each model call, timings and token counts — retained for review and <b>automatically deleted after 30 days</b>.</p>
+  </div>
+</section>
+
+<!-- ============================================ 11 · MULTISTEP -->
+<section class="slide">
+  <div class="top"><span class="sec">02 · The assistant</span><span class="num">11</span></div>
+  <h2 class="title">Deeper questions need more than one query <span class="pill pill--dev" style="vertical-align:14px">In development</span></h2>
+  <p class="kicker">"Which sections are falling short, and why?" cannot be answered by a single lookup. The planning path decomposes it, runs the steps, then checks whether the plan actually answered the question.</p>
+  <div class="body">
+    <div class="cols cols--4">
+      <div class="col col--ruled">
+        <span class="tag">Step 1</span>
+        <h3>Plan</h3>
+        <p>Break the question into ordered, individually answerable steps.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Step 2</span>
+        <h3>Execute</h3>
+        <p>Run each step through the same validated, permission-enforced path — plus a sandboxed calculator and a deterministic business-rule lookup.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Step 3</span>
+        <h3>Review</h3>
+        <p>Measure how much of the original goal the evidence actually covers. Revise the plan if it falls short.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Step 4</span>
+        <h3>Synthesise</h3>
+        <p>Turn the collected evidence into one answer with a stated verdict.</p>
+      </div>
+    </div>
+    <p class="fig-note" style="margin-top:34px">Built and unit-tested behind a feature switch. <b>It is being measured against the answer-quality benchmark before it is turned on</b> — the same standard every other change is held to.</p>
+  </div>
+</section>
+
+<!-- ============================================ 12 · DIVIDER: GENERATOR -->
+<section class="slide slide--divider" id="s9">
+  <div class="top"><span class="sec">03 · The generator</span><span class="num">12</span></div>
+  <div class="big">
+    <div class="idx">SECTION THREE</div>
+    <h2>The agent that writes its own queries</h2>
+    <p>Nobody picks a KPI, writes a DAX measure or fills in a template. It inspects the customer's model, works out what it can measure, and decides what deserves a manager's attention today.</p>
+  </div>
+</section>
+
+<!-- ============================================ 13 · FORK/JOIN -->
+<section class="slide">
+  <div class="top"><span class="sec">03 · The generator</span><span class="num">13</span></div>
+  <h2 class="title">One run, two products, two branches at once</h2>
+  <div class="body">
+    <figure>
+      <svg viewBox="0 0 1120 442" role="img" aria-label="The Power BI semantic model feeds a stage that reads metadata, profiles the model and understands the report. The flow forks into a descriptive branch and an investigative branch of three stages each, running concurrently, then rejoins at a barrier before validating and publishing.">
+        <defs>
+          <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#33443f"/>
+          </marker>
+        </defs>
+
+        <rect class="s-box" x="410" y="6" width="300" height="52" rx="3"/>
+        <text class="s-t" x="560" y="38" text-anchor="middle">Power BI semantic model — read only</text>
+
+        <line class="s-line" x1="560" y1="58" x2="560" y2="78" marker-end="url(#a4)"/>
+
+        <rect class="s-box" x="150" y="82" width="820" height="56" rx="3"/>
+        <text class="s-t"  x="560" y="108" text-anchor="middle">Read the metadata · profile the model · understand the report</text>
+        <text class="s-l"  x="560" y="128" text-anchor="middle">WHAT MEASURES EXIST · WHAT HIERARCHY THIS BUSINESS USES · WHAT THIS REPORT IS FOR</text>
+
+        <polyline class="s-line" points="560,138 560,160 285,160 285,196" marker-end="url(#a4)"/>
+        <polyline class="s-line" points="560,138 560,160 835,160 835,196" marker-end="url(#a4)"/>
+        <text class="s-la" x="560" y="180" text-anchor="middle">both branches run at the same time</text>
+
+        <text class="s-hd" x="60" y="190">DESCRIPTIVE — WHAT HAPPENED</text>
+        <rect class="s-box" x="60" y="198" width="450" height="52" rx="3"/>
+        <text class="s-t" x="285" y="230" text-anchor="middle">Write and run its own DAX</text>
+
+        <line class="s-line" x1="285" y1="250" x2="285" y2="268" marker-end="url(#a4)"/>
+        <rect class="s-box" x="60" y="272" width="450" height="52" rx="3"/>
+        <text class="s-t" x="285" y="304" text-anchor="middle">Choose what matters today</text>
+
+        <line class="s-line" x1="285" y1="324" x2="285" y2="342" marker-end="url(#a4)"/>
+        <rect class="s-box" x="60" y="346" width="450" height="52" rx="3"/>
+        <text class="s-t" x="285" y="378" text-anchor="middle">Build the evidence, then write it up</text>
+
+        <text class="s-hd" x="610" y="190">INVESTIGATIVE — WHY</text>
+        <rect class="s-box" x="610" y="198" width="450" height="52" rx="3"/>
+        <text class="s-t" x="835" y="230" text-anchor="middle">Detect signals and anomalies</text>
+
+        <line class="s-line" x1="835" y1="250" x2="835" y2="268" marker-end="url(#a4)"/>
+        <rect class="s-box" x="610" y="272" width="450" height="52" rx="3"/>
+        <text class="s-t" x="835" y="304" text-anchor="middle">Drop what was already said</text>
+
+        <line class="s-line" x1="835" y1="324" x2="835" y2="342" marker-end="url(#a4)"/>
+        <rect class="s-box" x="610" y="346" width="450" height="52" rx="3"/>
+        <text class="s-t" x="835" y="378" text-anchor="middle">Investigate the driver, then explain</text>
+
+        <polyline class="s-line" points="285,398 285,414 560,414" />
+        <polyline class="s-line" points="835,398 835,414 560,414" />
+        <line class="s-line" x1="560" y1="414" x2="560" y2="436"/>
+        <text class="s-la" x="560" y="432" text-anchor="middle">a barrier — neither output ships until both branches finish</text>
+      </svg>
+      <p class="fig-note"><b>Neither branch can block the other.</b> If the descriptive branch's queries fail, the investigative report still ships — and the join is an explicit barrier, so publishing can never fire twice or race.</p>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================ 14 · OWN DAX -->
+<section class="slide">
+  <div class="top"><span class="sec">03 · The generator</span><span class="num">14</span></div>
+  <h2 class="title">It is not given a query library</h2>
+  <div class="body">
+    <ul class="pts">
+      <li><b>It reads the model's metadata first</b> — which measures exist, which hierarchy this particular business uses, what this report is for. Division, department, section, category are discovered, not assumed.</li>
+      <li><b>It plans what it wants to know as plain intents</b>, then generates the DAX for each one.</li>
+      <li><b>Every generated query is checked against the real model before it runs.</b> If Power BI still returns an error, the exact error text is fed back once for a repair attempt — a failed query is repaired, not silently dropped.</li>
+      <li><b>Queries are budgeted.</b> A run has a fixed allowance of calls, spent on the highest-value scans first, so cost and runtime stay predictable.</li>
+    </ul>
+    <p class="fig-note" style="margin-top:36px">This is what makes onboarding a new customer <b>configuration rather than development</b>. Point it at a different semantic model and it discovers that business's own shape instead of expecting the last customer's.</p>
+  </div>
+</section>
+
+<!-- ============================================ 15 · RANKING -->
+<section class="slide">
+  <div class="top"><span class="sec">03 · The generator</span><span class="num">15</span></div>
+  <h2 class="title">The hard part is relevance</h2>
+  <p class="kicker">Rank by percentage and the report leads with a category worth a rounding error moving 2,000%. Ranking blends three things instead.</p>
+  <div class="body">
+    <div class="stats">
+      <div class="stat">
+        <div class="v">40%</div>
+        <div class="k"><b>Impact</b> — how much of the total business the move actually represents</div>
+      </div>
+      <div class="stat">
+        <div class="v">35%</div>
+        <div class="k"><b>Magnitude</b> — the size of the move, capped so a freak percentage can't dominate</div>
+      </div>
+      <div class="stat">
+        <div class="v">25%</div>
+        <div class="k"><b>Unexpectedness</b> — how far it deviates from how the rest of the estate moved</div>
+      </div>
+      <div class="stat">
+        <div class="v">100%</div>
+        <div class="k"><b>Coverage</b> — every member of every level still gets a ranked line, so nothing is silently omitted</div>
+      </div>
+    </div>
+    <p class="fig-note" style="margin-top:40px">A headline also has to clear a minimum relevance floor. <b>The narrative is selective; the coverage is complete</b> — which is how you get a short report that nobody has to distrust.</p>
+  </div>
+</section>
+
+<!-- ============================================ 16 · MEMORY -->
+<section class="slide">
+  <div class="top"><span class="sec">03 · The generator</span><span class="num">16</span></div>
+  <h2 class="title">A daily report that repeats itself stops being read</h2>
+  <div class="body">
+    <div class="cols cols--2">
+      <div class="col col--ruled">
+        <span class="tag">Memory</span>
+        <h3>It knows what it already told you</h3>
+        <p>The agent keeps a record of what it has delivered and suppresses a finding that overlaps a recent one — measured on the facts in the story, not just its title.</p>
+        <p>A story that has already run cools down before it can lead again.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Overrides</span>
+        <h3>Unless something genuinely changed</h3>
+        <p>Three things jump the rotation: a <b>reversal in direction</b>, a <b>newly completed</b> week, month or quarter, and a move large enough in <b>both size and share</b> to matter regardless.</p>
+        <p>If everything overlaps, the best story still ships rather than the page going silent.</p>
+      </div>
+    </div>
+    <p class="fig-note" style="margin-top:36px">There is also a <b>calendar check</b>: if every area moves the same way at once, suspect the comparison period before declaring a bad month — and the caveat names the areas it does <i>not</i> explain, so it can't be used as a blanket excuse.</p>
+  </div>
+</section>
+
+<!-- ============================================ 17 · DIVIDER: TRUST -->
+<section class="slide slide--divider" id="s14">
+  <div class="top"><span class="sec">04 · Trust</span><span class="num">17</span></div>
+  <div class="big">
+    <div class="idx">SECTION FOUR</div>
+    <h2>"Isn't this just a chatbot on our database?"</h2>
+    <p>The question every technical evaluator asks. There is a one-line answer, and it is the single most important design rule in the platform.</p>
+  </div>
+</section>
+
+<!-- ============================================ 18 · THE RULE -->
+<section class="slide">
+  <div class="top"><span class="sec">04 · Trust</span><span class="num">18</span></div>
+  <h2 class="title">Code owns the arithmetic. The model owns the language.</h2>
+  <div class="body">
+    <figure>
+      <svg viewBox="0 0 1120 300" role="img" aria-label="A left-to-right track. Four segments owned by deterministic code — pull the numbers, do the arithmetic, rank what matters, decide the page shape — feed one segment owned by the language model, writing the words. A validator gate sits between the model and the reader and sends failed drafts back.">
+        <defs>
+          <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#33443f"/>
+          </marker>
+          <marker id="a5w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#e2a75f"/>
+          </marker>
+        </defs>
+
+        <text class="s-hd" x="10" y="20">DETERMINISTIC CODE</text>
+        <line class="s-rule" x1="10" y1="32" x2="632" y2="32"/>
+
+        <rect class="s-box" x="10" y="52" width="146" height="82" rx="3"/>
+        <text class="s-t2" x="83" y="86"  text-anchor="middle">Pull the</text>
+        <text class="s-t2" x="83" y="106" text-anchor="middle">numbers</text>
+        <text class="s-l"  x="83" y="124" text-anchor="middle">DAX / graph</text>
+
+        <rect class="s-box" x="172" y="52" width="146" height="82" rx="3"/>
+        <text class="s-t2" x="245" y="86"  text-anchor="middle">Do the</text>
+        <text class="s-t2" x="245" y="106" text-anchor="middle">arithmetic</text>
+        <text class="s-l"  x="245" y="124" text-anchor="middle">exact, checked</text>
+
+        <rect class="s-box" x="334" y="52" width="146" height="82" rx="3"/>
+        <text class="s-t2" x="407" y="86"  text-anchor="middle">Rank what</text>
+        <text class="s-t2" x="407" y="106" text-anchor="middle">matters</text>
+        <text class="s-l"  x="407" y="124" text-anchor="middle">scored, not asked</text>
+
+        <rect class="s-box" x="496" y="52" width="146" height="82" rx="3"/>
+        <text class="s-t2" x="569" y="86"  text-anchor="middle">Decide the</text>
+        <text class="s-t2" x="569" y="106" text-anchor="middle">page shape</text>
+        <text class="s-l"  x="569" y="124" text-anchor="middle">every layer covered</text>
+
+        <line class="s-line" x1="156" y1="93" x2="166" y2="93" marker-end="url(#a5)"/>
+        <line class="s-line" x1="318" y1="93" x2="328" y2="93" marker-end="url(#a5)"/>
+        <line class="s-line" x1="480" y1="93" x2="490" y2="93" marker-end="url(#a5)"/>
+
+        <text class="s-hd" x="674" y="20">LANGUAGE MODEL</text>
+        <line class="s-rule" x1="674" y1="32" x2="838" y2="32"/>
+
+        <rect class="s-box-a" x="674" y="52" width="164" height="82" rx="3"/>
+        <text class="s-t"  x="756" y="88"  text-anchor="middle">Write the words</text>
+        <text class="s-la" x="756" y="108" text-anchor="middle">INTO SLOTS CODE</text>
+        <text class="s-la" x="756" y="124" text-anchor="middle">ALREADY CREATED</text>
+
+        <line class="s-line" x1="642" y1="93" x2="668" y2="93" marker-end="url(#a5)"/>
+
+        <text class="s-hd" x="870" y="20">GATE</text>
+        <line class="s-rule" x1="870" y1="32" x2="1110" y2="32"/>
+
+        <rect class="s-box" x="870" y="52" width="112" height="82" rx="3"/>
+        <text class="s-t2" x="926" y="86"  text-anchor="middle">Validator</text>
+        <text class="s-l"  x="926" y="106" text-anchor="middle">checks every</text>
+        <text class="s-l"  x="926" y="122" text-anchor="middle">quoted figure</text>
+
+        <rect class="s-box" x="1002" y="52" width="108" height="82" rx="3"/>
+        <text class="s-t" x="1056" y="99" text-anchor="middle">Reader</text>
+
+        <line class="s-line" x1="838" y1="93" x2="864" y2="93" marker-end="url(#a5)"/>
+        <line class="s-line" x1="982" y1="93" x2="996" y2="93" marker-end="url(#a5)"/>
+
+        <polyline class="s-line-w" points="926,134 926,182 756,182 756,138" marker-end="url(#a5w)"/>
+        <text class="s-l" x="841" y="204" text-anchor="middle">quotes a figure we can't back, states a cause the data doesn't show,</text>
+        <text class="s-l" x="841" y="222" text-anchor="middle">or runs one template across the page — rejected, rewritten</text>
+
+        <line class="s-rule" x1="10" y1="252" x2="1110" y2="252"/>
+        <text class="s-l" x="10" y="276">If the model fails, or no draft can pass, a grounded fallback written by code ships instead — the page is never blank, and validation can never dead-end.</text>
+      </svg>
+      <p class="fig-note">A model asked to both calculate and narrate will produce a fluent number that is wrong. <b>So it is never asked to.</b> Every figure that reaches a customer was computed in code or by the database.</p>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================ 19 · VALIDATORS -->
+<section class="slide">
+  <div class="top"><span class="sec">04 · Trust</span><span class="num">19</span></div>
+  <h2 class="title">What the validators actually reject</h2>
+  <p class="kicker">Real rules, enforced in code on every generated page. Not prompt instructions — checks that fail a build.</p>
+  <div class="body">
+    <div class="cols cols--2">
+      <div class="col">
+        <ul class="pts pts--tight">
+          <li>A figure quoted in the prose that <b>doesn't appear in the data behind the page</b> — including one quoted to more decimal places than allowed.</li>
+          <li>A stated <b>cause</b> that the data only shows as correlation.</li>
+          <li>Calling partial evidence a <b>complete share of total</b>.</li>
+          <li>Naming an area as included in year-on-year growth when it was <b>excluded from the comparison</b>.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <ul class="pts pts--tight">
+          <li>Internal vocabulary leaking into a manager-facing page — or a month rendered as <b>"month 1"</b> instead of January.</li>
+          <li>Calling the transaction count <b>"footfall" or "visits"</b>. It is bills, not people, and the difference changes what a manager does next.</li>
+          <li>Running <b>the same sentence template</b> across the page — caught proportionately, so two areas legitimately sharing a situation don't fail a correct page.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="fig-note" style="margin-top:30px">And the whole thing is <b>deterministic</b>: the same inputs must produce the same page. The build gate re-derives real artifacts from committed inputs and compares byte for byte, so a change that moves a number anywhere fails with a field-level diff.</p>
+  </div>
+</section>
+
+<!-- ============================================ 20 · SECURITY -->
+<section class="slide" id="s16">
+  <div class="top"><span class="sec">05 · Security</span><span class="num">20</span></div>
+  <h2 class="title">Can another customer see my data? Can my own staff see too much?</h2>
+  <div class="body">
+    <figure>
+      <svg viewBox="0 0 1120 316" role="img" aria-label="Three signed-in users from different customers each pass through a mapping step that resolves their email to exactly one storage container. Containers are isolated from each other. Inside a container, a one-way hash of the user's email selects their private folder.">
+        <defs>
+          <marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <polygon points="0,1 9,5 0,9" fill="#33443f"/>
+          </marker>
+        </defs>
+
+        <text class="s-hd" x="10" y="20">SIGNED-IN USER</text>
+        <text class="s-hd" x="340" y="20">RESOLUTION</text>
+        <text class="s-hd" x="640" y="20">ISOLATED STORAGE</text>
+
+        <rect class="s-box" x="10" y="40" width="210" height="58" rx="3"/>
+        <text class="s-t2" x="115" y="66" text-anchor="middle">User · Customer A</text>
+        <text class="s-l"  x="115" y="86" text-anchor="middle">Entra ID token</text>
+
+        <rect class="s-box" x="10" y="126" width="210" height="58" rx="3"/>
+        <text class="s-t2" x="115" y="152" text-anchor="middle">User · Customer B</text>
+        <text class="s-l"  x="115" y="172" text-anchor="middle">Entra ID token</text>
+
+        <rect class="s-box" x="10" y="212" width="210" height="58" rx="3"/>
+        <text class="s-t2" x="115" y="238" text-anchor="middle">User · Customer C</text>
+        <text class="s-l"  x="115" y="258" text-anchor="middle">Entra ID token</text>
+
+        <rect class="s-box-a" x="320" y="118" width="216" height="74" rx="3"/>
+        <text class="s-t"  x="428" y="148" text-anchor="middle">Map email → container</text>
+        <text class="s-la" x="428" y="172" text-anchor="middle">EXACTLY ONE, OR FAIL</text>
+
+        <line class="s-line" x1="220" y1="69"  x2="314" y2="134" marker-end="url(#a6)"/>
+        <line class="s-line" x1="220" y1="155" x2="314" y2="155" marker-end="url(#a6)"/>
+        <line class="s-line" x1="220" y1="241" x2="314" y2="176" marker-end="url(#a6)"/>
+
+        <line class="s-line" x1="536" y1="134" x2="628" y2="69"  marker-end="url(#a6)"/>
+        <line class="s-line" x1="536" y1="155" x2="628" y2="155" marker-end="url(#a6)"/>
+        <line class="s-line" x1="536" y1="176" x2="628" y2="241" marker-end="url(#a6)"/>
+
+        <rect class="s-box" x="634" y="40" width="242" height="58" rx="3"/>
+        <text class="s-t2" x="755" y="66" text-anchor="middle">Container A</text>
+        <text class="s-l"  x="755" y="86" text-anchor="middle">own graph · own index</text>
+
+        <rect class="s-box" x="634" y="126" width="242" height="58" rx="3"/>
+        <text class="s-t2" x="755" y="152" text-anchor="middle">Container B</text>
+        <text class="s-l"  x="755" y="172" text-anchor="middle">own graph · own index</text>
+
+        <rect class="s-box" x="634" y="212" width="242" height="58" rx="3"/>
+        <text class="s-t2" x="755" y="238" text-anchor="middle">Container C</text>
+        <text class="s-l"  x="755" y="258" text-anchor="middle">own graph · own index</text>
+
+        <line class="s-rule" x1="898" y1="34" x2="898" y2="276" stroke-dasharray="4 5"/>
+
+        <rect class="s-box" x="916" y="126" width="194" height="58" rx="3"/>
+        <text class="s-t2" x="1013" y="152" text-anchor="middle">users/&lt;hash&gt;/</text>
+        <text class="s-l"  x="1013" y="172" text-anchor="middle">private per person</text>
+        <line class="s-line" x1="876" y1="155" x2="910" y2="155" marker-end="url(#a6)"/>
+      </svg>
+      <p class="fig-note"><b>Separation is physical, not a customer column in a shared table.</b> Each customer has their own container, graph and index — and inside one, a user's folder is addressed by a one-way hash of their email, so a storage path never carries a readable identity.</p>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================ 21 · GATES -->
+<section class="slide">
+  <div class="top"><span class="sec">05 · Security</span><span class="num">21</span></div>
+  <h2 class="title">The gates a single request passes</h2>
+  <div class="body">
+    <table>
+      <tbody>
+        <tr><td class="k" style="width:26%">Who you are</td><td>Microsoft Entra ID against the customer's own directory. No passwords stored; their MFA and conditional-access policies apply unchanged.</td></tr>
+        <tr><td class="k">Whose data you reach</td><td>The email inside the validated token maps to exactly one container. Nothing in the request body can influence which.</td></tr>
+        <tr><td class="k">Which rows you reach</td><td>The query is rewritten with that user's data-scope keys before it runs. Deny by default — a query that can't be proven secure is refused, not run.</td></tr>
+        <tr><td class="k">Which reports you reach</td><td>Entitlements set by an administrator; Power BI embed tokens minted per user, per report, short-lived.</td></tr>
+        <tr><td class="k">What can be addressed</td><td>Report ids must be well-formed GUIDs and dates must be real calendar dates — both become storage path segments, so these are path-traversal guards.</td></tr>
+        <tr><td class="k">What is public</td><td>Static files are served before authentication, so customer data is kept out of the public folder entirely and dashboards are served only through an authenticated, entitlement-checked route.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================ 22 · AZURE -->
+<section class="slide">
+  <div class="top"><span class="sec">05 · Azure</span><span class="num">22</span></div>
+  <h2 class="title">All of it inside Azure</h2>
+  <p class="kicker">No third-party AI service, no external warehouse, no data leaving the tenant boundary in normal operation.</p>
+  <div class="body">
+    <div class="cols cols--3" style="gap:30px 40px">
+      <div class="col col--ruled">
+        <span class="tag">Identity</span>
+        <h3>Entra ID</h3>
+        <p>Separate app registrations for the web app and the API with a dedicated scope. Scheduled automation runs as a managed identity — no stored credential to leak.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Compute</span>
+        <h3>Container Apps</h3>
+        <p>The API scales with demand. Container Apps Jobs run the nightly insight generation, one per customer, and the knowledge-graph builder. A VM with IIS hosts the web app.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">AI</span>
+        <h3>Azure OpenAI</h3>
+        <p>Three deployments used by tier — a strong reasoning model, a fast inexpensive one for routing, and an embedding model. Prompts stay inside the service.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Data</span>
+        <h3>Blob, Files, SQL</h3>
+        <p>One blob container per customer. Azure Files holds the built graph and indexes. SQL Server holds only app configuration — no customer transaction data.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Analytics</span>
+        <h3>Power BI / Fabric</h3>
+        <p>The semantic models the generator reads and the reports the web app embeds. Read and build permission only — it never writes to the model.</p>
+      </div>
+      <div class="col col--ruled">
+        <span class="tag">Operations</span>
+        <h3>Automation</h3>
+        <p>Scheduled runbooks pause analytics capacity outside working hours — a material line on the monthly bill. Storage lifecycle rules expire diagnostic traces automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ 23 · STATUS -->
+<section class="slide" id="s19">
+  <div class="top"><span class="sec">06 · What's next</span><span class="num">23</span></div>
+  <h2 class="title">Shipping now, and what's coming</h2>
+  <div class="body">
+    <table>
+      <thead><tr><th style="width:30%">Capability</th><th style="width:52%">Where it stands</th><th style="width:18%">Status</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Assistant, KPI hub, summaries, dashboards</td><td>In production, including the four-layer interactive briefing and the dated archive of past analysis</td><td><span class="pill pill--live">Live</span></td></tr>
+        <tr><td class="k">Multi-step reasoning</td><td>Plan, execute, review, revise, synthesise — built and unit-tested behind a switch, being measured against the answer-quality benchmark</td><td><span class="pill pill--dev">In development</span></td></tr>
+        <tr><td class="k">Ask Team</td><td>Every insight offers two routes out: ask the AI, or hand it to a colleague. The first is live; assignment and notification are being built</td><td><span class="pill pill--dev">In development</span></td></tr>
+        <tr><td class="k">Structure-aware permission engine</td><td>A second enforcer that parses query structure rather than matching patterns — running in shadow mode against live traffic while the proven engine stays authoritative</td><td><span class="pill pill--dev">In development</span></td></tr>
+        <tr><td class="k">Sales domain packs</td><td>The generator is being generalised into domain verticals over one shared core. Inventory packs are complete; the sales additions are current work</td><td><span class="pill pill--dev">In development</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================ 24 · CLOSE -->
+<section class="slide">
+  <div class="top"><span class="sec">Close</span><span class="num">24</span></div>
+  <h2 class="title">Three things worth remembering</h2>
+  <div class="body">
+    <div class="claim" style="margin-bottom:38px">
+      <p>Your Power BI stays where it is. We add an AI layer that writes your analysis overnight and answers questions during the day — inside your own Microsoft tenant.</p>
+    </div>
+    <div class="cols cols--2">
+      <div class="col col--ruled">
+        <h3>The AI never does the maths</h3>
+        <p>It receives numbers that are already correct and turns them into English — and a validator checks that English back against the numbers before anyone sees it.</p>
+      </div>
+      <div class="col col--ruled">
+        <h3>Isolation is structural</h3>
+        <p>Your own container, your own graph. And inside your business, the assistant can only query rows that person is already entitled to — because the query is rewritten before it runs, not filtered afterwards.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="hint">← → to navigate</div>
+
+<div class="hud">
+  <div class="nav">
+    <button id="prev" type="button" aria-label="Previous slide">&#8592;</button>
+    <button id="next" type="button" aria-label="Next slide">&#8594;</button>
+  </div>
+  <div class="bar"><i id="prog"></i></div>
+  <div class="count" id="count">01 / 24</div>
+</div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var stage  = document.getElementById("stage");
+  var prog   = document.getElementById("prog");
+  var count  = document.getElementById("count");
+  var i = 0;
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, (window.innerHeight - 46) / 720);
+    stage.style.setProperty("--s", s);
+    slides.forEach(function (el) { el.style.setProperty("--s", s); });
+  }
+
+  function show(n, push) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (el, k) { el.classList.toggle("is-active", k === i); });
+    prog.style.width = ((i + 1) / slides.length * 100) + "%";
+    count.textContent = pad(i + 1) + " / " + pad(slides.length);
+    if (push) {
+      try { history.replaceState(null, "", "#" + (i + 1)); } catch (e) {}
+    }
+  }
+
+  document.getElementById("next").addEventListener("click", function () { show(i + 1, true); });
+  document.getElementById("prev").addEventListener("click", function () { show(i - 1, true); });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { e.preventDefault(); show(i + 1, true); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1, true); }
+    else if (e.key === "Home") { e.preventDefault(); show(0, true); }
+    else if (e.key === "End") { e.preventDefault(); show(slides.length - 1, true); }
+  });
+
+  // Agenda links jump by target slide id.
+  document.querySelectorAll(".agenda a").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      var t = document.querySelector(a.getAttribute("href"));
+      if (t) { show(slides.indexOf(t), true); }
+    });
+  });
+
+  window.addEventListener("resize", fit);
+
+  fit();
+  var start = parseInt((location.hash || "#1").slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1, false);
+})();
+</script>

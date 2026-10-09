@@ -1,0 +1,388 @@
+<title>AI Access Sync</title>
+<style>
+:root{
+  --paper:#EEF1F0; --paper-2:#E4E9E8; --surface:#FFFFFF; --surface-2:#F7F9F8;
+  --ink:#101B1A; --ink-2:#435250; --ink-3:#6F817E; --rule:#D6DDDB; --rule-2:#C2CCCA;
+  --accent:#0E7C74; --accent-2:#0A5F59; --accent-wash:#DCEBE9;
+  --flag:#A93226; --flag-wash:#F5E2E0; --amber:#8A5A11; --amber-wash:#F2E9D8;
+  --f-display:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --f-body:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --f-mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
+  --measure:68ch; --wide:1040px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0A1112; --paper-2:#0F1819; --surface:#101A1B; --surface-2:#162223;
+    --ink:#E6EEED; --ink-2:#A7B8B5; --ink-3:#7B8D8A; --rule:#22322F; --rule-2:#2E4240;
+    --accent:#3CC9B9; --accent-2:#5FDACB; --accent-wash:#12302D;
+    --flag:#EC8A7E; --flag-wash:#3A1F1C; --amber:#DDB066; --amber-wash:#33290F;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0A1112; --paper-2:#0F1819; --surface:#101A1B; --surface-2:#162223;
+  --ink:#E6EEED; --ink-2:#A7B8B5; --ink-3:#7B8D8A; --rule:#22322F; --rule-2:#2E4240;
+  --accent:#3CC9B9; --accent-2:#5FDACB; --accent-wash:#12302D;
+  --flag:#EC8A7E; --flag-wash:#3A1F1C; --amber:#DDB066; --amber-wash:#33290F;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:16px/1.6 var(--f-body);padding-inline:20px;padding-block:56px 96px}
+.page{max-width:var(--wide);margin-inline:auto;display:grid;gap:64px}
+.col{max-width:var(--measure)}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;color:var(--ink)}
+h1{font-size:clamp(2rem,4.4vw,2.9rem);line-height:1.12;letter-spacing:-.01em}
+h2{font-size:1.65rem;line-height:1.2}
+h3{font-size:1.15rem;line-height:1.3}
+p{margin:0}
+.stack{display:grid;gap:16px}
+.stack-lg{display:grid;gap:28px}
+.eyebrow{font:600 .72rem/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.lede{font-size:1.12rem;color:var(--ink-2)}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--paper-2);padding:.08em .35em;border-radius:3px;overflow-wrap:anywhere}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muted{color:var(--ink-3)}
+hr{border:0;border-top:1px solid var(--rule);margin:0}
+
+/* header */
+header{display:grid;gap:20px;padding-bottom:40px;border-bottom:1px solid var(--rule-2)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:.85rem;color:var(--ink-3)}
+.meta b{color:var(--ink-2);font-weight:600}
+
+/* finding callout */
+.finding{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:32px;align-items:start}
+.hashes{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th{font:600 .7rem/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule-2)}
+td{padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+td.num{font-variant-numeric:tabular-nums;text-align:right}
+tr.hl td{background:var(--accent-wash)}
+.match{color:var(--accent);font-weight:600}
+
+/* flow */
+.flows{display:grid;gap:20px}
+.lane{display:grid;grid-template-columns:140px minmax(0,1fr);gap:20px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px}
+.lane-label{display:grid;gap:4px}
+.lane-label strong{font-family:var(--f-display);font-weight:400;font-size:1.2rem}
+.steps{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.step{flex:1 1 150px;border:1px solid var(--rule-2);border-radius:4px;padding:10px 12px;background:var(--surface-2);display:grid;gap:4px;align-content:start;font-size:.85rem;line-height:1.4}
+.step .who{font:600 .66rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.step.manual{border-left:3px solid var(--amber)}
+.step.auto{border-left:3px solid var(--accent)}
+.step.one{flex:2 1 260px;background:var(--accent-wash);border-color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.8rem;color:var(--ink-3)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px;border-radius:2px}
+.legend .l-man::before{background:var(--amber)}
+.legend .l-auto::before{background:var(--accent)}
+
+/* mock */
+.mock{background:var(--surface);border:1px solid var(--rule-2);border-radius:8px;overflow:hidden;box-shadow:0 1px 0 var(--rule),0 12px 32px -18px rgba(16,27,26,.28)}
+.mock-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.mock-bar strong{font-family:var(--f-display);font-weight:400;font-size:1.1rem}
+.mock-note{font:600 .66rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.mock-table{overflow-x:auto}
+.mock-table table{min-width:640px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.ok{color:var(--accent-2);background:var(--accent-wash)}
+.warn{color:var(--amber);background:var(--amber-wash)}
+.bad{color:var(--flag);background:var(--flag-wash)}
+.off{color:var(--ink-3);background:var(--paper-2)}
+.btn{font:600 .78rem/1 var(--f-body);color:var(--accent);background:transparent;border:1px solid var(--rule-2);border-radius:4px;padding:6px 10px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.sub{font-size:.78rem;color:var(--ink-3)}
+.mock-foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--rule);border-top:1px solid var(--rule)}
+.mock-foot > div{background:var(--surface);padding:16px 18px;display:grid;gap:8px;align-content:start}
+.field{display:grid;gap:6px}
+.field label{font-size:.78rem;color:var(--ink-2);font-weight:600}
+.select{font-family:var(--f-mono);font-size:.85rem;border:1px solid var(--rule-2);border-radius:4px;padding:7px 10px;background:var(--surface-2);display:flex;justify-content:space-between}
+
+/* decisions */
+.decisions{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.decisions > div{background:var(--surface);padding:22px;display:grid;gap:8px;align-content:start}
+.decisions p{color:var(--ink-2);font-size:.93rem}
+
+/* phases */
+.phases{display:grid;gap:0;border-top:1px solid var(--rule-2)}
+.phase{display:grid;grid-template-columns:72px minmax(0,1fr) 180px;gap:24px;padding-block:28px;border-bottom:1px solid var(--rule)}
+.phase-n{font-family:var(--f-display);font-size:2.4rem;line-height:1;color:var(--accent)}
+.phase-body{display:grid;gap:12px;max-width:var(--measure)}
+.phase-body ul{margin:0;padding-left:1.1rem;display:grid;gap:6px;color:var(--ink-2)}
+.phase-side{display:grid;gap:10px;align-content:start;font-size:.82rem;color:var(--ink-3)}
+.phase-side div{display:grid;gap:2px}
+.phase-side b{font:600 .66rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase}
+.phase-side span{color:var(--ink-2)}
+.phase-side .pill{justify-self:start}
+
+pre{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;overflow-x:auto;font:.82rem/1.55 var(--f-mono);color:var(--ink-2)}
+pre .k{color:var(--accent)}
+
+.risks{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:6px}
+.risks table{min-width:680px}
+.risks td:first-child{font-weight:600;width:28%}
+
+.done{background:var(--surface-2);border:1px dashed var(--rule-2);border-radius:6px;padding:24px;display:grid;gap:14px}
+.done ul{margin:0;padding-left:1.1rem;display:grid;gap:6px;color:var(--ink-2);font-size:.93rem}
+
+@media (max-width:760px){
+  body{padding-block:32px 64px}
+  .page{gap:48px}
+  .finding{grid-template-columns:1fr;padding:20px}
+  .lane{grid-template-columns:1fr}
+  .phase{grid-template-columns:44px minmax(0,1fr)}
+  .phase-n{font-size:1.8rem}
+  .phase-side{grid-column:2;grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+}
+</style>
+
+<main class="page">
+
+<header>
+  <span class="eyebrow">ScanB platform · cross-repo plan · Web App + AI Bot</span>
+  <h1>Add a user once, and ScanB AI knows them</h1>
+  <p class="lede col">Today a user who should reach the AI has to be added three times: in the Web App, in a JSON file in blob storage, and in a parquet file in blob storage. Then the bot has to be restarted. This plan makes the existing Add User screen the only step.</p>
+  <div class="meta">
+    <span><b>Date</b> 15 Sep 2026</span>
+    <span><b>Repos</b> TurnB_ScanB_WebApplication · ScanB-AI-Agent</span>
+    <span><b>Seam</b> S1 (new endpoints) · agent-config blobs</span>
+    <span><b>Auto-Insight</b> untouched</span>
+  </div>
+</header>
+
+<section class="stack-lg">
+  <div class="stack col">
+    <span class="eyebrow">Why this is simpler than it looks</span>
+    <h2>The AI's access file is already a copy of Web App data</h2>
+    <p>The bot's row security comes from <code>{container}/User_Security.parquet</code>: one <code>email, odsKey</code> row per section a user can see. The Web App already stores the same thing in <code>UserOdsMapping</code>, set through the outlet → department → section picker admins use today.</p>
+  </div>
+  <div class="finding">
+    <div class="stack">
+      <h3>Checked against UAT on 15 Sep</h3>
+      <p class="muted">For every SB Mart user, the keys built from SQL as <code>Outlet.LocationCode | Department.Name | Section.Name</code> hash identically to that user's rows in the live parquet.</p>
+      <p>So the Web App already has everything the AI needs. The one fact it doesn't record is <strong>which blob container a customer's data lives in</strong>, and that's a single column.</p>
+    </div>
+    <div class="hashes">
+      <table>
+        <thead><tr><th>User</th><th class="num">SQL</th><th class="num">Parquet</th><th>SHA-256</th></tr></thead>
+        <tbody>
+          <tr><td>ameer.ca</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+          <tr><td>dilshad.mn</td><td class="num">24</td><td class="num">24</td><td class="match">match</td></tr>
+          <tr><td>gokul.raj</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+          <tr><td>miclin.geo</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+          <tr><td>mohamed.shafi</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+          <tr class="hl"><td>mohamed.shareef</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+          <tr><td>nsankar134</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+          <tr><td>rufin.alikhan</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+          <tr><td>shenzy.fathima</td><td class="num">115</td><td class="num">115</td><td class="match">match</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="stack-lg">
+  <div class="stack col">
+    <span class="eyebrow">The change</span>
+    <h2>From five handoffs to one Save</h2>
+  </div>
+  <div class="flows">
+    <div class="lane">
+      <div class="lane-label"><span class="eyebrow">Today</span><strong>Manual, needs Azure access</strong></div>
+      <div class="steps">
+        <div class="step auto"><span class="who">Web App</span>Admin adds user, picks outlets / departments / sections</div>
+        <div class="step manual"><span class="who">Blob</span>Download, edit and re-upload <code>client_mapping.json</code></div>
+        <div class="step manual"><span class="who">Blob</span>Rewrite <code>User_Security.parquet</code> with pandas</div>
+        <div class="step manual"><span class="who">Azure</span>Restart the container app</div>
+        <div class="step manual"><span class="who">Nobody</span>Deactivate or delete never reaches the AI</div>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label"><span class="eyebrow">Proposed</span><strong>One step, in the UI</strong></div>
+      <div class="steps">
+        <div class="step auto one"><span class="who">Web App</span>Admin adds, edits, deactivates or deletes a user as today. On Save the Web App sends the user's access to the bot.</div>
+        <div class="step auto"><span class="who">AI Bot</span>Updates both blobs safely and clears its caches. No restart.</div>
+        <div class="step auto"><span class="who">Web App</span>Shows an AI status next to the user</div>
+      </div>
+    </div>
+    <div class="legend"><span class="l-auto">Happens in software</span><span class="l-man">Needs a person with Azure access</span></div>
+  </div>
+</section>
+
+<section class="stack-lg">
+  <div class="stack col">
+    <span class="eyebrow">What the admin sees</span>
+    <h2>No new form: one column, one setting, one button</h2>
+    <p class="muted">A user's AI access comes from the customer and the access they already have. The screen only adds AI status and a way to retry.</p>
+  </div>
+  <div class="mock" role="img" aria-label="Mock of the user management grid with an AI access status column">
+    <div class="mock-bar">
+      <strong>Users · SB Mart</strong>
+      <span class="mock-note">Illustrative mock · rows use real UAT users</span>
+    </div>
+    <div class="mock-table">
+      <table>
+        <thead><tr><th>Name</th><th>Role</th><th>Outlets</th><th>Sections</th><th>ScanB AI</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Shareef<div class="sub mono">mohamed.shareef@turnb.com</div></td><td>Business Leader</td><td>All</td><td>All</td><td><span class="pill ok">Synced</span><div class="sub">115 keys · 2 min ago</div></td><td></td></tr>
+          <tr><td>Dilshad<div class="sub mono">dilshad.mn@turnb.com</div></td><td>Department Head</td><td>ST1 +4</td><td>CONSUMER GOODS +3</td><td><span class="pill ok">Synced</span><div class="sub">24 keys</div></td><td></td></tr>
+          <tr><td>New hire<div class="sub mono">example@turnb.com</div></td><td>Outlet Head</td><td>ST3</td><td>All</td><td><span class="pill bad">Not synced</span><div class="sub">AI service didn't respond</div></td><td><button class="btn" type="button" id="mock-retry">Retry</button></td></tr>
+          <tr><td>Leaver<div class="sub mono">former@turnb.com</div></td><td>Salesman</td><td>ST2</td><td>—</td><td><span class="pill off">Access removed</span><div class="sub">user deactivated</div></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mock-foot">
+      <div>
+        <span class="mock-note">Customer settings · set once per customer</span>
+        <div class="field"><label for="mock-container">AI data container</label><div class="select" id="mock-container"><span>sb-mart</span><span class="muted">▾</span></div></div>
+        <span class="sub">Options come from the bot's container list, so a mistyped name can't be saved.</span>
+      </div>
+      <div>
+        <span class="mock-note">Customer actions</span>
+        <div><button class="btn primary" type="button" id="mock-resync">Resync all AI access</button></div>
+        <span class="sub">Rebuilds this customer's AI access from the Web App. Safe to run any time; also used for the first backfill.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stack-lg">
+  <div class="stack col">
+    <span class="eyebrow">Design decisions</span>
+    <h2>The Web App decides, the bot writes the files</h2>
+  </div>
+  <div class="decisions">
+    <div><h3>Web App SQL is the source of truth</h3><p>Access is managed in one place. The two blobs become generated output, rebuilt from SQL on each change, so they can't drift. Hand edits stop being a normal workflow.</p></div>
+    <div><h3>The bot owns its own files</h3><p>Only the bot can clear its in-memory caches, and it already has pyarrow for parquet. The Web App stays on HTTP only (seam S1), needs no write access to <code>agent-config</code>, and gains no parquet dependency.</p></div>
+    <div><h3>Admin calls use an app-only token</h3><p>New <code>/admin/*</code> routes require an Azure AD app role, <code>AI.Admin</code>, which is granted only to the Web App's own identity. A signed-in person's token is refused, even a customer admin's.</p></div>
+    <div><h3>Tenant moves must be explicit</h3><p>If an email is already mapped to a different container, the write is refused unless the request sets <code>allowMove</code>. The Web App sets it only when the customer really changed. That boundary is where one customer could see another's data.</p></div>
+    <div><h3>A failed sync never blocks the user</h3><p>The SQL save and Azure AD invite still happen. The AI result is stored per user and shown as a status with a Retry. An AI outage slows AI access; it doesn't stop onboarding.</p></div>
+    <div><h3>Removing access is part of the design</h3><p>Deactivate and delete remove the user from both blobs. Today a deleted Web App user keeps a working AI mapping, a gap this closes.</p></div>
+  </div>
+</section>
+
+<section class="stack-lg">
+  <div class="stack col">
+    <span class="eyebrow">Delivery</span>
+    <h2>Four phases; each is useful on its own</h2>
+    <p class="muted">Ordered so the reader of the files ships before the writer, as seam S1 requires. Estimates are for one developer and are rough.</p>
+  </div>
+  <div class="phases">
+
+    <article class="phase">
+      <div class="phase-n">1</div>
+      <div class="phase-body">
+        <h3>Bot: no more restarts</h3>
+        <ul>
+          <li>Reload <code>client_mapping.json</code> when its ETag changes, checking at most every 60s. That's one metadata request, and it replaces the load-once-at-startup cache in <code>db_manager.py</code>.</li>
+          <li>Replace the <code>lru_cache</code> on <code>get_user_allowed_keys</code> with a 60s TTL cache that never caches a failed lookup. It used to cache "no access" until the next restart.</li>
+          <li><code>/auth/validate</code>: an unmapped email returns <code>authorized: false</code> instead of an unhandled 500.</li>
+          <li><code>scripts/ai_users.py add | remove | show | diff</code>: today's manual procedure as one command, with a snapshot, ETag guard and read-back check.</li>
+        </ul>
+      </div>
+      <div class="phase-side">
+        <div><b>Status</b><span class="pill ok">Live on UAT</span></div>
+        <div><b>Repo</b><span>ScanB-AI-Agent</span></div>
+        <div><b>Gate</b><span>pytest -m unit</span></div>
+      </div>
+    </article>
+
+    <article class="phase">
+      <div class="phase-n">2</div>
+      <div class="phase-body">
+        <h3>Bot: admin API</h3>
+        <pre><span class="k">GET</span>    /admin/ai-containers
+<span class="k">GET</span>    /admin/ai-users/{email}
+<span class="k">PUT</span>    /admin/ai-users/{email}        { container, name, odsKeys[], allowMove }
+<span class="k">DELETE</span> /admin/ai-users/{email}
+<span class="k">PUT</span>    /admin/ai-containers/{c}/users  { users[] }   <span class="muted"># full customer resync</span></pre>
+        <ul>
+          <li>Each write is read → change → ETag-guarded upload, retried on a conflict and snapshotted first. It clears the local cache immediately; other replicas catch up within 60s through phase 1.</li>
+          <li>Validation: container must be on the allowlist; email is lower-cased; keys must match <code>^[^|]+\|[^|]+\|[^|]+$</code>. A key the container's data doesn't contain is rejected.</li>
+          <li>An audit line per change goes to <code>agent-config/audit/2026-09.jsonl</code>: who, what, before and after key counts.</li>
+          <li>A resync reports users in the container who are missing from the request as <code>notInRequest</code>, and removes them only when the request sets <code>removeMissing</code>. A partial list can't revoke anyone by accident.</li>
+          <li>Authorization requires all four: the calling app in <code>AI_ADMIN_CLIENT_IDS</code>, an application token (any <code>scp</code> is refused), the <code>AI.Admin</code> role, and the tenant-pinned issuer check.</li>
+        </ul>
+      </div>
+      <div class="phase-side">
+        <div><b>Status</b><span class="pill ok">Live on UAT</span></div>
+        <div><b>Repo</b><span>ScanB-AI-Agent</span></div>
+        <div><b>Entra</b><span><code>AI.Admin</code> created and granted to ScanB, 15 Sep</span></div>
+      </div>
+    </article>
+
+    <article class="phase">
+      <div class="phase-n">3</div>
+      <div class="phase-body">
+        <h3>Web App: sync on Save</h3>
+        <ul>
+          <li>Migration (guarded, additive): <code>Customer.aiContainer NVARCHAR(63) NULL</code>, plus table <code>AiAccessSync(userId, status, keyCount, syncedAt, error)</code>.</li>
+          <li><code>AiAccessSyncService</code> runs after the SQL commit in <code>AddNewUserAsync</code> (Add and Edit), <code>DeleteUsersAsync</code>, the status toggle, and when a customer's AI flag or container changes.</li>
+          <li>It only acts when the customer has AI access and a container set; otherwise AI access is removed. Keys are built from <code>UserOdsMappings</code>, exactly as verified above.</li>
+          <li>Transport: the existing <code>FastApi</code> client (8s) with an app-only token. Routes live in config as <code>FastApi:AiUsersPath</code> and <code>FastApi:AiContainersPath</code>, following the pattern already in use.</li>
+          <li>UI: the status pill and Retry in the users grid, plus the container dropdown and Resync button on the customer screen.</li>
+          <li>Two rollout guards: nothing runs until <code>FastApi:AiAccessSyncEnabled</code> is on, and a customer with no <code>aiContainer</code> keeps its hand-made access untouched.</li>
+          <li>Resync always shows a preview first. Removing emails that aren't active users of the customer is a separate, unticked choice that lists each one.</li>
+          <li>Also fixes an existing bug: saving a customer opened through the list's Edit link turned ScanB AI off.</li>
+        </ul>
+      </div>
+      <div class="phase-side">
+        <div><b>Status</b><span class="pill ok">Live on UAT</span></div>
+        <div><b>Repo</b><span>TurnB_ScanB_WebApplication</span></div>
+        <div><b>Gate</b><span>dotnet msbuild -t:Compile</span></div>
+      </div>
+    </article>
+
+    <article class="phase">
+      <div class="phase-n">4</div>
+      <div class="phase-body">
+        <h3>Backfill and drift check</h3>
+        <ul>
+          <li>Set <code>aiContainer</code> for SB Mart (<code>sb-mart</code>), CITYFLOWER (<code>cityflower</code>) and the scanb customers, then run Resync for each once.</li>
+          <li><strong>UAT review, 15 Sep:</strong> SB Mart matched exactly (9 unchanged) and is now managed from the Web App. CITYFLOWER is held back: UAT's Web App has 1 of the 7 outlets the AI data covers, so a resync would cut 5 users from 315–343 sections to 46. TurnB is held back too: its UAT outlets (<code>MH10</code>, <code>MH12</code>, <code>test1</code>) share no keys with the scanb data. Both stay unmanaged, with their current AI access untouched, until their outlet data is imported or aligned.</li>
+          <li><strong>Later the same day:</strong> SB Mart's resync was applied from the UI, which proved the Web App's app token works. Two safety rules then shipped: an automatic save can't remove access the Web App didn't grant, and keys are checked by outlet against the customer's AI data, so brand-new customers work. CITYFLOWER and TurnB were then switched over as well; the rules keep their access unchanged until their outlet data is fixed and a resync is reviewed. Onboarding checklist: <a href="https://claude.ai/artifact/A8qB2uaJujertFFKz8Thut">ScanB AI Customer Onboarding</a>.</li>
+          <li>Before the first resync, run <code>ai_users.py diff</code>: the same per-user hash comparison as above, for every container. Any mismatch is reviewed by a person before the resync overwrites it.</li>
+          <li>Update <code>SYSTEM.md</code>: new S1 endpoints, and the AI Bot's admin API as the only writer of <code>agent-config</code>.</li>
+        </ul>
+      </div>
+      <div class="phase-side">
+        <div><b>Status</b><span class="pill ok">All 3 managed on UAT · guarded</span></div>
+        <div><b>Repos</b><span>both + platform docs</span></div>
+        <div><b>Env</b><span>UAT first, then prod <code>scanbaiagent</code></span></div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="stack-lg">
+  <div class="stack col">
+    <span class="eyebrow">Risks</span>
+    <h2>What could go wrong</h2>
+  </div>
+  <div class="risks">
+    <table>
+      <thead><tr><th>Risk</th><th>Consequence</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td>Wrong container for a customer</td><td>A user queries another customer's data</td><td>Dropdown limited to the bot's allowlist; <code>allowMove</code> required to change an existing mapping; audit log</td></tr>
+        <tr><td>Two admins save at once</td><td>One change silently lost in the shared parquet</td><td>ETag-guarded writes with retry; each write re-reads the current file</td></tr>
+        <tr><td>Resync removes hand-added users</td><td>Demo or test accounts lose AI access</td><td>Unmanaged flag; diff and human review before the first resync</td></tr>
+        <tr><td>Admin API is reachable</td><td>Anyone could grant themselves access</td><td>App role only in app-only tokens; VNet-internal ingress on UAT; route hidden from OpenAPI</td></tr>
+        <tr><td>Web App's key format changes</td><td>RBAC denies everything for affected users</td><td>Bot rejects keys the container's data doesn't contain; unit test pins the format on both sides</td></tr>
+        <tr><td>Bot down during Save</td><td>User added without AI access</td><td>Not-synced status with Retry; customer Resync; phase 4 diff finds leftovers</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="done">
+  <span class="eyebrow">Already done today · UAT</span>
+  <h3>mohamed.shareef@turnb.com is live on SB Mart</h3>
+  <ul>
+    <li><code>agent-config/client_mapping.json</code>: added → <code>sb-mart</code> (53 → 54 entries). Blob snapshot 2026-09-15T05:52:12Z.</li>
+    <li><code>sb-mart/User_Security.parquet</code>: 115 rows copied from nsankar134@gmail.com (829 → 944 rows). Blob snapshot 2026-09-15T05:52:14Z.</li>
+    <li>Bot restarted: revision <code>scanb-ai-agent--0000019</code> logged "Client mapping loaded: 54 user(s)" at 05:54 UTC.</li>
+    <li>Web App: moved from CITYFLOWER (1022) to SB Mart (1036) as Business Leader with the same 115 ODS rows. Script and rollback are in <code>docs/sql/2026-09-15_MoveShareefToSbMart*.sql</code>.</li>
+  </ul>
+</section>
+
+</main>

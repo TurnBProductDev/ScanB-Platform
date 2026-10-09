@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "C:/Users/TURNRETAIL/OneDrive - turnb.com (1)/TurnB_ScanB_WebApplication_latest",
+      "C:/Users/TURNRETAIL/OneDrive - turnb.com (1)/ScanB-AI-Bot",
+      "C:/Users/TURNRETAIL/OneDrive - turnb.com (1)/Auto-Insight-Generation"
+    ],
+    "allow": [
+      "Bash(docker build:*)",
+      "Bash(docker push:*)",
+      "Bash(az containerapp update:*)",
+      "Bash(az storage blob upload:*)",
+      "Bash(az storage blob generate-sas:*)",
+      "Bash(az storage blob list:*)",
+      "Bash(az storage blob delete:*)",
+      "Bash(az containerapp create:*)",
+      "Bash(az containerapp show:*)",
+      "Bash(az containerapp revision list:*)",
+      "Bash(az containerapp job create:*)",
+      "Bash(az containerapp job show:*)",
+      "Bash(az containerapp job start:*)",
+      "Bash(az containerapp job execution list:*)",
+      "Bash(MSYS_NO_PATHCONV=1 az containerapp:*)",
+
+      "Bash(az vm run-command invoke:*)",
+      "Bash(az monitor log-analytics query:*)",
+
+      "Bash(az storage container list:*)",
+      "Bash(az storage container create:*)",
+      "Bash(az storage table list:*)",
+
+      "Bash(az vm delete:*)",
+      "Bash(az disk delete:*)",
+      "Bash(az snapshot delete:*)",
+      "Bash(az network nic delete:*)",
+      "Bash(az network public-ip delete:*)",
+
+      "Bash(dotnet publish:*)"
+    ]
+  }
+}
+
