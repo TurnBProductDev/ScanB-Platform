@@ -1,9 +1,9 @@
 {
   "permissions": {
     "additionalDirectories": [
-      "C:/Users/TURNRETAIL/OneDrive - turnb.com (1)/TurnB_ScanB_WebApplication_latest",
-      "C:/Users/TURNRETAIL/OneDrive - turnb.com (1)/ScanB-AI-Bot",
-      "C:/Users/TURNRETAIL/OneDrive - turnb.com (1)/Auto-Insight-Generation"
+      "C:/Users/ShankarN/OneDrive - turnb.com/TurnB_ScanB_WebApplication_latest",
+      "C:/Users/ShankarN/OneDrive - turnb.com/ScanB-AI-Bot",
+      "C:/Users/ShankarN/OneDrive - turnb.com/Auto-Insight-Generation"
     ],
     "allow": [
       "Bash(docker build:*)",
