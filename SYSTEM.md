@@ -240,7 +240,13 @@ is in the Web App's `docs/visual-qa.md`.
   `TurnB_ScanB_WebApplication/docs/sql/2026-09-15_MessagingPermissions.sql`.
 * `Auto-Insight-Generation/CLAUDE.md` and `AGENTS.md` must stay byte-identical.
 * Auto-Insight's `outputs*/` folders are generated artifacts, not source.
-* **All three repos live inside OneDrive.** OneDrive resolves a sync clash by
-  leaving a second copy next to the original with the machine name appended
-  (`response_formatter-LAPTOP-DMROBM24.py`) or a `_conflict_backup_*` folder.
-  Those are not source. Never edit one, and never treat one as the live file.
+* **The repos live in `C:\dev\ScanB`, outside OneDrive** (moved 2026-10-13).
+  GitHub is their only copy off this laptop, so push your branch at the end of
+  each day. The files git ignores (`.env`, `appsettings*.json`, the Web App's
+  `.csproj`, `.pbi_token_cache.json`) are covered only by the weekly encrypted
+  backup, `scripts/Backup-LocalOnly.ps1`. Never put a repo, a `.venv` or a
+  `node_modules` back under OneDrive: tens of thousands of small files stall
+  its sync.
+* Files with a machine name appended (`response_formatter-LAPTOP-DMROBM24.py`)
+  or a `_conflict_backup_*` folder are leftovers from OneDrive sync clashes.
+  They are not source. Never edit one, and never treat one as the live file.
